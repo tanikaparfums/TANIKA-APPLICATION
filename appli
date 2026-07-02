@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#FBF7EE">
+<title>L'Olfactothèque Tanika</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --ivoire:#FBF7EE; --ivoire-fonce:#F3EBD9;
+    --or:#C9A227; --or-clair:#E3C766; --or-pale:#EFE2B8;
+    --encre:#2E2A1F; --royal:#1E2C63; --brun:#6B5E3F;
+    --vert:#3E8E5A; --terre:#B5483A;
+    --c1:#B5483A; --c2:#D97A2B; --c3:#D9B428; --c4:#3E8E5A; --c5:#33689E; --c6:#5B3D8C; --c7:#8C79C2;
+    --nav-h:72px; --safe-bas:env(safe-area-inset-bottom,0px);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    background:var(--ivoire);color:var(--encre);
+    font-family:'Cormorant Garamond',serif;font-size:18px;
+    overflow:hidden;position:fixed;inset:0;
+    user-select:none;-webkit-user-select:none;
+  }
+  input,textarea,select{user-select:text;-webkit-user-select:text}
+
+  /* SPLASH */
+  #splash{
+    position:fixed;inset:0;z-index:100;
+    background:radial-gradient(circle at 50% 38%,#27387A,var(--royal) 75%);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    transition:opacity .8s ease, visibility .8s;
+  }
+  #splash.cache{opacity:0;visibility:hidden;pointer-events:none}
+  #splash .logo{font-family:'Cinzel Decorative',serif;font-size:38px;letter-spacing:.22em;color:var(--or-clair);animation:lueur 2.4s ease infinite alternate}
+  #splash .ligne{font-style:italic;color:#EFE2B8;margin-top:8px;font-size:17px;letter-spacing:.05em;text-align:center;padding:0 30px}
+  #splash .symbole{color:var(--or-clair);margin-top:24px;font-size:22px;animation:pulse 1.6s ease infinite}
+  @keyframes lueur{from{text-shadow:0 0 12px #E3C76633}to{text-shadow:0 0 28px #E3C766AA}}
+  @keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+
+  .mandala-bg{position:fixed;top:42%;left:50%;width:160vmax;height:160vmax;transform:translate(-50%,-50%);opacity:.04;pointer-events:none;z-index:0;animation:rotation 240s linear infinite}
+  @keyframes rotation{to{transform:translate(-50%,-50%) rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){.mandala-bg{animation:none}*{transition:none!important;animation-duration:.01s!important}}
+
+  #app{position:fixed;inset:0;display:flex;flex-direction:column;z-index:1}
+  .barre-haut{text-align:center;padding:calc(14px + env(safe-area-inset-top,0px)) 16px 10px;background:linear-gradient(180deg,var(--ivoire) 70%,transparent);z-index:5}
+  .barre-haut .titre{font-family:'Cinzel Decorative',serif;font-size:16px;letter-spacing:.2em;color:var(--royal);font-weight:700}
+  .barre-haut .souligne{width:52px;height:2px;margin:7px auto 0;background:linear-gradient(90deg,transparent,var(--or),transparent)}
+
+  .ecrans{flex:1;position:relative;overflow:hidden}
+  .ecran{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:6px 18px calc(var(--nav-h) + var(--safe-bas) + 24px);opacity:0;transform:translateX(22px);pointer-events:none;transition:opacity .35s ease,transform .35s ease}
+  .ecran.actif{opacity:1;transform:none;pointer-events:auto}
+
+  .barre-nav{position:fixed;left:0;right:0;bottom:0;z-index:10;height:calc(var(--nav-h) + var(--safe-bas));padding-bottom:var(--safe-bas);background:rgba(251,247,238,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--or-pale);display:flex}
+  .onglet{flex:1;border:none;background:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--brun);transition:color .25s;font-family:'Cormorant Garamond',serif}
+  .onglet .ico{font-size:22px;transition:transform .25s}
+  .onglet .lib{font-family:'Cinzel Decorative',serif;font-size:9px;letter-spacing:.1em;text-transform:uppercase}
+  .onglet.actif{color:var(--royal)}
+  .onglet.actif .ico{transform:translateY(-3px) scale(1.12)}
+  .onglet.actif::after{content:"";width:5px;height:5px;border-radius:50%;background:var(--or);margin-top:1px}
+
+  h2{font-family:'Cinzel Decorative',serif;font-size:20px;letter-spacing:.1em;text-align:center;color:var(--royal);font-weight:400;margin-top:14px}
+  .invocation{text-align:center;font-style:italic;color:var(--brun);margin:8px 0 18px;font-size:16.5px;line-height:1.4}
+  label{display:block;font-family:'Cinzel Decorative',serif;font-size:10px;letter-spacing:.16em;color:var(--brun);margin:14px 0 6px;text-transform:uppercase}
+  input[type=text],input[type=number],textarea,select{width:100%;background:#FFFDF7;border:1px solid var(--or-pale);border-radius:10px;padding:12px 13px;font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--encre)}
+  input:focus,textarea:focus,select:focus{outline:none;border-color:var(--or);box-shadow:0 0 0 2px var(--or-pale)}
+  textarea{resize:none;min-height:70px}
+  .bouton-or{display:block;width:100%;margin:18px auto 0;font-family:'Cinzel Decorative',serif;font-size:12.5px;letter-spacing:.14em;color:var(--ivoire);background:linear-gradient(180deg,var(--or-clair),var(--or));border:none;padding:15px;border-radius:14px;cursor:pointer;box-shadow:0 3px 12px #C9A22744;transition:transform .2s}
+  .bouton-or:active{transform:scale(.97)}
+  .bouton-ligne{background:none;border:1px solid var(--or-pale);color:var(--brun);box-shadow:none}
+
+  /* ACCUEIL */
+  .accueil-hero{text-align:center;padding:18px 4px 6px}
+  .accueil-logo{font-family:'Cinzel Decorative',serif;font-size:36px;letter-spacing:.2em;color:var(--royal);font-weight:700}
+  .accueil-baseline{font-style:italic;color:var(--brun);margin-top:6px;font-size:17px;line-height:1.4}
+  .accueil-carte{border:1px solid var(--or-pale);border-radius:16px;background:linear-gradient(160deg,#FFFDF7,var(--ivoire-fonce));padding:20px 18px;margin-top:22px}
+  .accueil-carte h3{font-family:'Cinzel Decorative',serif;font-size:13px;letter-spacing:.12em;color:var(--royal);text-transform:uppercase;margin-bottom:8px;text-align:center}
+  .accueil-carte p{font-size:16.5px;line-height:1.55}
+  .accueil-carte p+p{margin-top:10px}
+  .fonctions{display:flex;flex-direction:column;gap:10px;margin-top:22px}
+  .fonction{display:flex;align-items:center;gap:13px;border:1px solid var(--or-pale);border-radius:12px;background:#FFFDF7;padding:12px 14px}
+  .fonction .fi{font-size:22px;flex-shrink:0}
+  .fonction .ft b{font-family:'Cinzel Decorative',serif;font-size:12px;letter-spacing:.05em;color:var(--royal);display:block}
+  .fonction .ft span{font-style:italic;color:var(--brun);font-size:14.5px}
+  .accueil-signature-bloc{text-align:center;margin-top:26px;padding:18px;border-top:1px solid var(--or-pale);border-bottom:1px solid var(--or-pale)}
+  .accueil-signature-bloc .pretresse{font-family:'Cinzel Decorative',serif;font-size:12px;letter-spacing:.1em;color:var(--or);text-transform:uppercase}
+  .accueil-signature-bloc p{font-style:italic;color:var(--brun);margin-top:8px;font-size:15.5px;line-height:1.5}
+  .cta-doubles{display:flex;flex-direction:column;gap:10px;margin-top:22px}
+
+  /* SCANNER D'INTENTION */
+  .intention-carte{border:1px solid var(--or-pale);border-radius:16px;background:linear-gradient(160deg,#FFFDF7,var(--ivoire-fonce));padding:18px;margin-bottom:16px}
+  .intention-carte h4{font-family:'Cinzel Decorative',serif;font-size:11.5px;letter-spacing:.12em;color:var(--royal);text-transform:uppercase;text-align:center}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px}
+  .chip{border:1px solid var(--or-pale);background:#FFFDF7;border-radius:20px;padding:9px 15px;font-size:15px;color:var(--encre);cursor:pointer;transition:all .2s}
+  .chip.choisi{background:var(--royal);border-color:var(--royal);color:var(--or-clair)}
+  .chip:active{transform:scale(.96)}
+  .intention-resume{text-align:center;font-style:italic;color:var(--brun);font-size:14.5px;margin-top:12px;min-height:20px}
+  .lien-modifier{display:block;text-align:center;font-style:italic;color:var(--brun);font-size:13.5px;text-decoration:underline;margin-top:6px;background:none;border:none;cursor:pointer}
+
+  /* SCANNER */
+  .cadre-scan{border:1px solid var(--or-pale);border-radius:18px;background:linear-gradient(160deg,#FFFDF7,var(--ivoire-fonce));padding:20px;text-align:center;margin-top:10px}
+  #video-zone{position:relative;width:100%;aspect-ratio:3/4;max-height:300px;background:#151b3a;border-radius:14px;overflow:hidden;display:none;margin-bottom:14px}
+  #video-zone.actif{display:block}
+  #video{width:100%;height:100%;object-fit:cover}
+  .viseur{position:absolute;inset:20% 12%;border:2px solid var(--or-clair);border-radius:10px;box-shadow:0 0 0 2000px rgba(21,27,58,.35)}
+  .viseur::after{content:"";position:absolute;left:0;right:0;top:50%;height:2px;background:var(--or-clair);box-shadow:0 0 8px var(--or-clair);animation:balaye 2s ease-in-out infinite}
+  @keyframes balaye{0%,100%{top:12%}50%{top:88%}}
+  .scan-ico{font-size:42px;color:var(--or)}
+  .scan-txt{font-style:italic;color:var(--brun);margin:10px 0 4px;font-size:16px;line-height:1.4}
+  .ou{display:flex;align-items:center;gap:10px;margin:18px 0 4px;color:var(--brun);font-style:italic;font-size:14px}
+  .ou::before,.ou::after{content:"";flex:1;height:1px;background:var(--or-pale)}
+
+  /* CARTE VERDICT */
+  .verdict{display:none;margin-top:16px}
+  .verdict.visible{display:block;animation:apparition .5s ease}
+  @keyframes apparition{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .v-carte{border-radius:18px;padding:24px 20px;text-align:center;box-shadow:0 8px 24px #2E2A1F1A;border:1px solid var(--or)}
+  .v-tres-haute{background:radial-gradient(circle at 50% 0%,#2b3d84,var(--royal));color:#F7EFD8;border-color:var(--or-clair)}
+  .v-haute{background:linear-gradient(165deg,#FFFDF7,var(--or-pale));color:var(--encre)}
+  .v-positive{background:linear-gradient(165deg,#FFFDF7,#E7F0E7);color:var(--encre)}
+  .v-basse{background:linear-gradient(165deg,#FFFDF7,#F2E2DF);color:var(--encre)}
+  .v-badge{font-family:'Cinzel Decorative',serif;font-size:13px;letter-spacing:.16em;text-transform:uppercase;font-weight:700}
+  .v-tres-haute .v-badge{color:var(--or-clair)}
+  .v-haute .v-badge{color:var(--or)}
+  .v-positive .v-badge{color:var(--vert)}
+  .v-basse .v-badge{color:var(--terre)}
+  .v-nom{font-family:'Cinzel Decorative',serif;font-size:22px;margin-top:12px;line-height:1.25}
+  .v-marque{font-style:italic;opacity:.8;margin-top:2px;font-size:16px}
+  .v-bovis{font-family:'Cinzel Decorative',serif;font-size:40px;margin-top:16px;letter-spacing:.02em}
+  .v-unite{font-size:12px;letter-spacing:.16em;text-transform:uppercase;opacity:.75;font-family:'Cinzel Decorative',serif}
+  .v-pastille{display:inline-flex;align-items:center;gap:7px;margin-top:12px;font-size:15px}
+  .v-pastille i{width:10px;height:10px;border-radius:50%;display:inline-block;border:1px solid #0003}
+  .v-notes{font-style:italic;margin-top:6px;font-size:16px;opacity:.85}
+  .v-pourquoi{font-size:16.5px;line-height:1.5;margin-top:16px;text-align:left}
+  .v-compat{margin-top:16px;padding:12px 14px;border-radius:12px;text-align:left;font-size:15.5px;line-height:1.4}
+  .v-compat.oui{background:rgba(62,142,90,.15)}
+  .v-compat.non{background:rgba(181,72,58,.13)}
+  .v-tres-haute .v-compat.oui{background:rgba(227,199,102,.18)}
+  .v-tres-haute .v-compat.non{background:rgba(255,255,255,.08)}
+  .v-compat b{font-family:'Cinzel Decorative',serif;font-size:11px;letter-spacing:.08em;display:block;margin-bottom:3px;text-transform:uppercase}
+  .v-moments{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:14px}
+  .v-tag{font-size:12.5px;border:1px solid rgba(107,94,63,.3);border-radius:20px;padding:5px 11px}
+  .v-tres-haute .v-tag{border-color:rgba(227,199,102,.4);color:var(--or-clair)}
+  .v-oracle{margin-top:18px;padding:16px 14px;border-radius:12px;background:rgba(0,0,0,.04);text-align:left;position:relative}
+  .v-tres-haute .v-oracle{background:rgba(255,255,255,.06)}
+  .v-oracle .et-oracle{font-family:'Cinzel Decorative',serif;font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.7}
+  .v-oracle .txt-oracle{font-style:italic;font-size:16.5px;line-height:1.5;margin-top:6px}
+  .cta-bloc{margin-top:18px;padding-top:18px;border-top:1px solid rgba(201,162,39,.35)}
+  .cta-txt{font-size:15px;font-style:italic;line-height:1.4;opacity:.9}
+  .bouton-cta{display:block;width:100%;margin:12px auto 0;text-align:center;text-decoration:none;font-family:'Cinzel Decorative',serif;font-size:11.5px;letter-spacing:.12em;color:#F7EFD8;background:linear-gradient(180deg,#27387A,var(--royal));padding:15px 12px;border-radius:14px;box-shadow:0 3px 12px #1E2C6344;transition:transform .2s}
+  .v-tres-haute .bouton-cta{background:linear-gradient(180deg,var(--or-clair),var(--or));color:var(--royal)}
+  .bouton-cta:active{transform:scale(.97)}
+  .non-trouve{text-align:center;font-style:italic;color:var(--brun);background:#FFFDF7;border:1px dashed var(--or-pale);border-radius:12px;padding:18px;margin-top:14px;line-height:1.5;font-size:16px;display:none}
+  .non-trouve.visible{display:block}
+
+  /* CLASSEUR */
+  .recherche{position:relative;margin-top:6px}
+  .compteur{text-align:center;font-style:italic;color:var(--brun);font-size:14px;margin:10px 0 4px}
+  .parfum{border:1px solid var(--or-pale);border-left:4px solid var(--or);border-radius:12px;background:#FFFDF7;padding:14px 15px;margin-bottom:11px;cursor:pointer;transition:transform .15s}
+  .parfum:active{transform:scale(.99)}
+  .p-tete{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .p-nom{font-family:'Cinzel Decorative',serif;font-size:16px;color:var(--royal);line-height:1.25}
+  .p-marque{font-style:italic;color:var(--brun);font-size:15px}
+  .p-bovis{text-align:right;flex-shrink:0}
+  .p-bovis b{font-family:'Cinzel Decorative',serif;font-size:19px;color:var(--encre);display:block}
+  .p-mini-badge{font-family:'Cinzel Decorative',serif;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border-radius:20px;display:inline-block;margin-top:2px}
+  .mb-tres{background:var(--royal);color:var(--or-clair)}
+  .mb-haute{background:var(--or-pale);color:var(--brun)}
+  .mb-pos{background:#E1EEE1;color:var(--vert)}
+  .mb-basse{background:#F2E2DF;color:var(--terre)}
+  .p-detail{max-height:0;overflow:hidden;transition:max-height .35s ease}
+  .parfum.ouvert .p-detail{max-height:300px;margin-top:10px}
+  .p-detail .l{font-size:15.5px;margin-top:5px;line-height:1.4}
+  .p-detail .l b{color:var(--brun)}
+  .vide{text-align:center;font-style:italic;color:var(--brun);padding:26px 12px;line-height:1.5}
+
+  /* Espace créatrice */
+  .creatrice{border:1px solid var(--or-pale);border-radius:14px;background:linear-gradient(160deg,#FFFDF7,var(--ivoire-fonce));padding:16px;margin-top:20px}
+  .creatrice summary{font-family:'Cinzel Decorative',serif;font-size:12px;letter-spacing:.12em;color:var(--royal);cursor:pointer;text-transform:uppercase;list-style:none;text-align:center}
+  .creatrice summary::-webkit-details-marker{display:none}
+  .creatrice[open] summary{margin-bottom:6px}
+  .note-part{font-style:italic;color:var(--brun);font-size:14px;text-align:center;margin:8px 0 4px;line-height:1.4}
+
+  /* VERROU CRÉATRICE */
+  .verrou{text-align:center;padding:8px 2px}
+  .verrou .ico-v{font-size:28px;color:var(--or)}
+  .verrou p{font-style:italic;color:var(--brun);font-size:14.5px;margin:8px 0 12px;line-height:1.4}
+  .verrou input{text-align:center;letter-spacing:.12em}
+  .erreur-pin{color:var(--terre);font-size:13.5px;font-style:italic;margin-top:8px;display:none}
+  .erreur-pin.visible{display:block}
+  .zone-creatrice{display:none}
+  .zone-creatrice.visible{display:block}
+  .badge-verrouille{display:inline-block;font-size:11px;color:var(--or);margin-left:6px}
+
+  /* ARTICLES */
+  .article{border:1px solid var(--or-pale);border-left:4px solid var(--or);border-radius:12px;background:#FFFDF7;padding:15px 16px;margin-bottom:12px;cursor:pointer}
+  .art-tete{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+  .art-cat{font-family:'Cinzel Decorative',serif;font-size:9px;letter-spacing:.12em;color:var(--or);text-transform:uppercase}
+  .art-titre{font-family:'Cinzel Decorative',serif;font-size:17px;color:var(--royal);margin-top:4px;line-height:1.3}
+  .art-meta{font-style:italic;color:var(--brun);font-size:14px;margin-top:3px}
+  .art-corps{max-height:0;overflow:hidden;transition:max-height .4s ease}
+  .article.ouvert .art-corps{max-height:1200px;margin-top:10px}
+  .art-texte{font-size:16.5px;line-height:1.55;white-space:pre-wrap}
+  .suppr-art{background:none;border:none;color:var(--brun);opacity:.5;font-size:14px;cursor:pointer;flex-shrink:0}
+
+  /* SIGNATURE TANIKA */
+  .signature{font-style:italic;color:var(--brun);font-size:11.5px;letter-spacing:.03em;margin-top:2px}
+  .pied-signature{text-align:center;font-style:italic;color:var(--brun);font-size:14px;margin:28px 0 6px;letter-spacing:.03em}
+  .pied-signature .or{color:var(--or)}
+
+  /* JOURNAL */
+  .curseur-bloc{display:flex;align-items:center;gap:14px;margin-top:4px}
+  input[type=range]{flex:1;accent-color:var(--or)}
+  .val-e{font-family:'Cinzel Decorative',serif;color:var(--royal);min-width:30px;text-align:center;font-size:18px}
+  .entree{border:1px solid var(--or-pale);border-left:3px solid var(--or);border-radius:12px;background:#FFFDF7;padding:14px 15px;margin-bottom:12px;position:relative}
+  .entree .date{font-family:'Cinzel Decorative',serif;font-size:9.5px;letter-spacing:.14em;color:var(--or);text-transform:uppercase}
+  .entree .parf{font-size:18px;color:var(--royal);font-weight:600;margin-top:3px}
+  .entree .l{font-size:15.5px;margin-top:4px}
+  .entree .l b{color:var(--brun)}
+  .jauge{height:5px;background:var(--or-pale);border-radius:3px;margin-top:8px;overflow:hidden}
+  .jauge i{display:block;height:100%;background:linear-gradient(90deg,var(--or-clair),var(--or))}
+  .suppr{position:absolute;top:9px;right:11px;background:none;border:none;color:var(--brun);cursor:pointer;font-size:14px;opacity:.5}
+
+  /* PROFIL & BIBLIOTHÈQUE */
+  .profil-bloc{border:1px solid var(--or-pale);border-radius:14px;background:linear-gradient(160deg,#FFFDF7,var(--ivoire-fonce));padding:16px;text-align:center;margin-bottom:22px}
+  .profil-bloc.rempli{padding:12px 16px}
+  .profil-salut{font-family:'Cinzel Decorative',serif;font-size:15px;color:var(--royal);letter-spacing:.03em}
+  .profil-note{font-style:italic;color:var(--brun);font-size:14px;margin-top:4px}
+  .separateur-titre{font-family:'Cinzel Decorative',serif;font-size:13px;letter-spacing:.1em;color:var(--royal);text-transform:uppercase;text-align:center;margin:28px 0 4px}
+  .bib-carte{border:1px solid var(--or-pale);border-radius:12px;background:#FFFDF7;padding:12px 14px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+  .bib-check{width:20px;height:20px;accent-color:var(--or);flex-shrink:0}
+  .bib-info{flex:1}
+  .bib-nom{font-family:'Cinzel Decorative',serif;font-size:15.5px;color:var(--royal)}
+  .bib-meta{font-style:italic;color:var(--brun);font-size:13.5px;margin-top:2px}
+  .bib-bovis{font-family:'Cinzel Decorative',serif;font-size:16px;color:var(--encre);flex-shrink:0}
+  .comparaison{border:1px solid var(--or);border-radius:16px;background:linear-gradient(160deg,#FFFDF7,var(--or-pale));padding:18px;margin:16px 0;display:none}
+  .comparaison.visible{display:block;animation:apparition .5s ease}
+  .comp-ligne{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px}
+  .comp-nom{font-family:'Cinzel Decorative',serif;font-size:14px;color:var(--royal);flex:1}
+  .comp-barre-fond{flex:2;height:8px;background:#fff;border-radius:4px;overflow:hidden}
+  .comp-barre{height:100%;background:linear-gradient(90deg,var(--or-clair),var(--or))}
+  .comp-val{font-family:'Cinzel Decorative',serif;font-size:14px;width:52px;text-align:right}
+
+  /* MANTRAS */
+  .mantra-jour{border:1px solid var(--or);border-radius:18px;box-shadow:inset 0 0 0 5px var(--ivoire),inset 0 0 0 6px var(--or-clair);background:radial-gradient(circle at 50% 0%,#2b3d84,var(--royal));color:#F7EFD8;padding:26px 22px;text-align:center;margin-top:12px}
+  .mantra-jour .et{font-family:'Cinzel Decorative',serif;font-size:10px;letter-spacing:.2em;color:var(--or-clair);text-transform:uppercase}
+  .mantra-jour .txt{font-style:italic;font-size:20px;line-height:1.45;margin-top:12px}
+  .mantra-jour .theme{font-family:'Cinzel Decorative',serif;font-size:11px;letter-spacing:.14em;color:var(--or-clair);margin-top:14px;text-transform:uppercase}
+  .rituel{border:1px solid var(--or-pale);border-radius:14px;background:#FFFDF7;padding:16px;margin-top:16px}
+  .rituel h3{font-family:'Cinzel Decorative',serif;font-size:12px;letter-spacing:.12em;color:var(--royal);text-transform:uppercase;text-align:center;margin-bottom:10px}
+  .rituel ol{list-style:none;counter-reset:r}
+  .rituel li{counter-increment:r;position:relative;padding:6px 0 6px 34px;font-size:16px;line-height:1.4}
+  .rituel li::before{content:counter(r);position:absolute;left:0;top:6px;width:22px;height:22px;border-radius:50%;background:var(--or-pale);color:var(--brun);font-family:'Cinzel Decorative',serif;font-size:12px;display:flex;align-items:center;justify-content:center}
+  .m-liste{margin-top:18px}
+  .m-carte{border:1px solid var(--or-pale);border-radius:12px;background:#FFFDF7;padding:14px 15px;margin-bottom:11px}
+  .m-carte .theme{font-family:'Cinzel Decorative',serif;font-size:10px;letter-spacing:.12em;color:var(--or);text-transform:uppercase}
+  .m-carte .txt{font-style:italic;font-size:17px;margin-top:5px;line-height:1.4}
+
+  /* CHATBOT */
+  .bulle-chat{
+    position:fixed;right:16px;z-index:20;
+    bottom:calc(var(--nav-h) + var(--safe-bas) + 16px);
+    width:54px;height:54px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#2b3d84,var(--royal));
+    border:2px solid var(--or-clair);color:var(--or-clair);
+    display:flex;align-items:center;justify-content:center;font-size:24px;
+    box-shadow:0 4px 16px #1E2C6355;cursor:pointer;
+  }
+  .bulle-chat:active{transform:scale(.93)}
+  #modal-chat{
+    position:fixed;inset:0;z-index:50;background:rgba(46,42,31,.45);
+    display:none;align-items:flex-end;justify-content:center;
+  }
+  #modal-chat.visible{display:flex}
+  .chat-panneau{
+    width:100%;max-width:480px;height:min(78vh,640px);
+    background:var(--ivoire);border-radius:22px 22px 0 0;
+    display:flex;flex-direction:column;overflow:hidden;
+    box-shadow:0 -8px 30px #2E2A1F33;
+  }
+  .chat-tete{
+    background:linear-gradient(135deg,#27387A,var(--royal));color:#F7EFD8;
+    padding:16px 18px;display:flex;align-items:center;justify-content:space-between;
+  }
+  .chat-tete .ct-nom{font-family:'Cinzel Decorative',serif;font-size:14px;letter-spacing:.08em}
+  .chat-tete .ct-sous{font-style:italic;font-size:12.5px;opacity:.85;margin-top:2px}
+  .chat-fermer{background:none;border:none;color:#F7EFD8;font-size:20px;cursor:pointer;padding:4px 8px}
+  .chat-corps{flex:1;overflow-y:auto;padding:16px;-webkit-overflow-scrolling:touch}
+  .msg{max-width:82%;margin-bottom:12px;padding:11px 14px;border-radius:14px;font-size:15.5px;line-height:1.4}
+  .msg-bot{background:#FFFDF7;border:1px solid var(--or-pale);border-bottom-left-radius:4px}
+  .msg-user{background:var(--royal);color:#F7EFD8;margin-left:auto;border-bottom-right-radius:4px}
+  .msg-bot a{color:var(--royal);font-weight:600}
+  .msg-tape{display:flex;gap:4px;padding:11px 14px}
+  .msg-tape span{width:6px;height:6px;border-radius:50%;background:var(--or);animation:tape 1.2s infinite}
+  .msg-tape span:nth-child(2){animation-delay:.2s}
+  .msg-tape span:nth-child(3){animation-delay:.4s}
+  @keyframes tape{0%,60%,100%{opacity:.3}30%{opacity:1}}
+  .chat-suggestions{display:flex;gap:8px;overflow-x:auto;padding:0 16px 12px;flex-shrink:0}
+  .chat-chip{flex-shrink:0;font-size:13.5px;border:1px solid var(--or-pale);background:#FFFDF7;border-radius:16px;padding:8px 13px;cursor:pointer;white-space:nowrap}
+  .chat-saisie{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--or-pale);flex-shrink:0}
+  .chat-saisie input{flex:1;border-radius:20px;padding:11px 16px}
+  .chat-envoyer{width:42px;height:42px;border-radius:50%;background:var(--or);border:none;color:var(--ivoire);font-size:17px;cursor:pointer;flex-shrink:0}
+
+  /* AUTHENTIFICATION */
+  .auth-carte{border:1px solid var(--or-pale);border-radius:16px;background:linear-gradient(160deg,#FFFDF7,var(--ivoire-fonce));padding:20px 18px;text-align:center}
+  .auth-onglets{display:flex;gap:6px;margin-bottom:16px}
+  .auth-onglet{flex:1;border:1px solid var(--or-pale);background:#FFFDF7;border-radius:10px;padding:10px;font-family:'Cinzel Decorative',serif;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--brun);cursor:pointer}
+  .auth-onglet.actif{background:var(--royal);color:var(--or-clair);border-color:var(--royal)}
+  .auth-erreur{color:var(--terre);font-size:14px;font-style:italic;margin-top:10px;display:none;text-align:left}
+  .auth-erreur.visible{display:block}
+  .auth-note{font-style:italic;color:var(--brun);font-size:13.5px;margin-top:12px;line-height:1.4}
+  .profil-connecte{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .btn-deconnexion{background:none;border:1px solid var(--or-pale);color:var(--brun);font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13.5px;padding:6px 12px;border-radius:20px;cursor:pointer;flex-shrink:0}
+  .admin-etiquette{display:inline-block;font-family:'Cinzel Decorative',serif;font-size:9px;letter-spacing:.1em;color:var(--or);background:var(--royal);padding:3px 9px;border-radius:20px;margin-left:6px;vertical-align:middle}
+  .verrou-connexion{text-align:center;padding:8px 2px}
+  .verrou-connexion .ico-v{font-size:28px;color:var(--or)}
+  .verrou-connexion p{font-style:italic;color:var(--brun);font-size:14.5px;margin:8px 0 12px;line-height:1.4}
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <div class="logo">TANIKA</div>
+  <div class="ligne">L'Olfactothèque · Les parfums qui vibrent haut<br>une création de Nossane</div>
+  <div class="symbole">✦</div>
+</div>
+
+<svg class="mandala-bg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <g fill="none" stroke="#C9A227" stroke-width="1">
+    <circle cx="200" cy="200" r="60"/><circle cx="200" cy="200" r="100"/>
+    <circle cx="200" cy="200" r="150"/><circle cx="200" cy="200" r="190"/>
+    <g id="petales"></g>
+  </g>
+</svg>
+
+<div id="app">
+  <div class="barre-haut">
+    <div class="titre" id="titre-haut">L'OLFACTOTHÈQUE</div>
+    <div class="signature">Tanika Parfums · par Nossane</div>
+    <div class="souligne"></div>
+  </div>
+
+  <div class="ecrans">
+
+    <!-- ======= ACCUEIL ======= -->
+    <div class="ecran actif" id="accueil">
+      <div class="accueil-hero">
+        <div class="accueil-logo">TANIKA</div>
+        <p class="accueil-baseline">L'Olfactothèque, le répertoire vivant des parfums qui vibrent haut</p>
+      </div>
+
+      <div class="accueil-carte">
+        <h3>Pourquoi cette application</h3>
+        <p>Chaque parfum porte une fréquence. Certains élèvent, d'autres alourdissent, et la plupart des gens choisissent leur fragrance sans jamais se poser la question.</p>
+        <p>J'ai créé l'Olfactothèque pour rendre cette lecture accessible à toutes : scanner un parfum en boutique, savoir s'il vibre haut, et comprendre pourquoi, avant même de l'acheter.</p>
+      </div>
+
+      <div class="fonctions">
+        <div class="fonction"><span class="fi">📷</span><span class="ft"><b>Scanne en boutique</b><span>Code-barres ou nom, verdict immédiat</span></span></div>
+        <div class="fonction"><span class="fi">🔮</span><span class="ft"><b>Compatibilité d'intention</b><span>Amour, confiance, abondance…</span></span></div>
+        <div class="fonction"><span class="fi">📖</span><span class="ft"><b>Ta bibliothèque</b><span>Retrouve et compare tes scans</span></span></div>
+        <div class="fonction"><span class="fi">📿</span><span class="ft"><b>Mantras & rituels</b><span>Active ton parfum par la parole</span></span></div>
+        <div class="fonction"><span class="fi">📰</span><span class="ft"><b>Articles</b><span>Guidance olfactive, notes & vertus</span></span></div>
+      </div>
+
+      <div class="accueil-signature-bloc">
+        <div class="pretresse">Nossane · Prêtresse Alchimiste</div>
+        <p>Fondatrice de Tanika Parfums, la première maison de parfumerie énergétique. Chaque outil de cette app est une extension de mon travail de scan vibratoire et de radiesthésie.</p>
+      </div>
+
+      <div class="cta-doubles">
+        <a class="bouton-cta" href="https://tanikaparfums.fr" target="_blank" rel="noopener">✦ Visiter tanikaparfums.fr ✦</a>
+        <button class="bouton-or" id="btn-decouvrir-produits">Découvrir mon Scan Olfactif</button>
+      </div>
+
+      <p class="pied-signature">✦ <span class="or">Tanika Parfums</span> · une création de Nossane ✦</p>
+    </div>
+
+    <!-- ======= SCANNER ======= -->
+    <div class="ecran" id="scanner">
+      <h2>Le Scan</h2>
+      <p class="invocation">En boutique, scanne le code-barres d'un parfum et découvre s'il vibre haut.</p>
+
+      <div class="intention-carte">
+        <h4>✦ Ton intention du moment ✦</h4>
+        <p class="intention-resume" id="resume-etat">Comment te sens-tu aujourd'hui ?</p>
+        <div class="chips" id="chips-etat"></div>
+        <p class="intention-resume" id="resume-intention" style="display:none">Quelle énergie souhaites-tu incarner ?</p>
+        <div class="chips" id="chips-intention" style="display:none"></div>
+        <button class="lien-modifier" id="btn-modifier-intention" style="display:none">Modifier mon intention</button>
+      </div>
+
+      <div class="cadre-scan">
+        <div id="video-zone">
+          <video id="video" playsinline muted></video>
+          <div class="viseur"></div>
+        </div>
+        <div id="scan-accueil">
+          <div class="scan-ico">📷</div>
+          <p class="scan-txt">Vise le code-barres au dos de la boîte ou du flacon.</p>
+        </div>
+        <button class="bouton-or" id="btn-camera">Activer la caméra</button>
+        <div class="ou">ou</div>
+        <label for="scan-nom" style="text-align:left">Rechercher par nom</label>
+        <input type="text" id="scan-nom" placeholder="Ex. : Paradoxe, Libre, Baccarat…">
+        <button class="bouton-or bouton-ligne" id="btn-chercher">Chercher dans le répertoire</button>
+      </div>
+
+      <div class="non-trouve" id="non-trouve"></div>
+
+      <div class="verdict" id="verdict"></div>
+
+      <p class="pied-signature">✦ <span class="or">Tanika Parfums</span> · une création de Nossane ✦</p>
+    </div>
+
+    <!-- ======= CLASSEUR ======= -->
+    <div class="ecran" id="classeur">
+      <h2>Le Classeur</h2>
+      <p class="invocation">Le répertoire des parfums qui vibrent haut, enrichi jour après jour par Nossane.</p>
+
+      <div class="recherche">
+        <input type="text" id="filtre" placeholder="🔍 Rechercher un parfum, une marque, une note…">
+      </div>
+      <div class="compteur" id="compteur"></div>
+      <div id="liste-classeur"></div>
+
+      <details class="creatrice">
+        <summary>✦ Espace créatrice <span class="badge-verrouille" id="badge-classeur">🔒</span> ✦</summary>
+
+        <div class="verrou" id="verrou-classeur">
+          <div class="ico-v">🔒</div>
+          <p>Cet espace est réservé à Nossane.<br>Connecte-toi avec ton compte administrateur dans l'onglet « Mon Espace » pour ajouter un parfum.</p>
+        </div>
+
+        <div class="zone-creatrice" id="zone-classeur">
+        <p class="note-part">Tes ajouts rejoignent le répertoire visible par tes clientes.</p>
+        <label for="a-nom">Nom du parfum</label>
+        <input type="text" id="a-nom" placeholder="Ex. : Paradoxe">
+        <label for="a-marque">Marque</label>
+        <input type="text" id="a-marque" placeholder="Ex. : Prada">
+        <label for="a-code">Code-barres (facultatif, pour le scan)</label>
+        <input type="number" id="a-code" placeholder="Ex. : 3614273760980">
+        <label for="a-bovis">Taux vibratoire (Bovis / U.B.)</label>
+        <input type="number" id="a-bovis" placeholder="Ex. : 10800">
+        <label for="a-famille">Famille olfactive</label>
+        <input type="text" id="a-famille" placeholder="Ex. : Floral musqué">
+        <label for="a-chakra">Point de résonance</label>
+        <select id="a-chakra">
+          <option value="0">Racine</option>
+          <option value="1">Sacré</option>
+          <option value="2">Plexus solaire</option>
+          <option value="3" selected>Cœur</option>
+          <option value="4">Gorge</option>
+          <option value="5">Troisième œil</option>
+          <option value="6">Couronne</option>
+        </select>
+        <label for="a-pourquoi">Pourquoi il vibre (ou non)</label>
+        <textarea id="a-pourquoi" placeholder="Ce que cette fragrance soutient énergétiquement…"></textarea>
+        <label>Compatible avec les intentions</label>
+        <div class="chips" id="a-intentions"></div>
+        <label>Moment idéal pour le porter</label>
+        <div class="chips" id="a-moments"></div>
+        <label for="a-oracle">Message oracle (carte d'inspiration)</label>
+        <textarea id="a-oracle" placeholder="Une phrase inspirante associée à ce parfum…"></textarea>
+        <button class="bouton-or" id="btn-ajouter">Ajouter au répertoire</button>
+        </div>
+      </details>
+
+      <p class="pied-signature">✦ <span class="or">Tanika Parfums</span> · par Nossane ✦</p>
+    </div>
+
+    <!-- ======= JOURNAL ======= -->
+    <div class="ecran" id="journal">
+      <h2>Mon Espace</h2>
+      <p class="invocation">Ton compte, ton journal, ta bibliothèque de parfums scannés.</p>
+
+      <!-- Non connectée -->
+      <div id="zone-non-connectee">
+        <div class="auth-carte">
+          <div class="auth-onglets">
+            <button class="auth-onglet actif" id="onglet-connexion">Connexion</button>
+            <button class="auth-onglet" id="onglet-inscription">Créer un compte</button>
+          </div>
+          <div id="form-connexion">
+            <input type="text" id="conn-email" placeholder="Email" autocomplete="email">
+            <input type="password" id="conn-motdepasse" placeholder="Mot de passe" autocomplete="current-password" style="margin-top:10px">
+            <button class="bouton-or" id="btn-connexion">Se connecter</button>
+          </div>
+          <div id="form-inscription" style="display:none">
+            <input type="text" id="insc-prenom" placeholder="Ton prénom">
+            <input type="text" id="insc-email" placeholder="Email" autocomplete="email" style="margin-top:10px">
+            <input type="password" id="insc-motdepasse" placeholder="Mot de passe (6 caractères min.)" autocomplete="new-password" style="margin-top:10px">
+            <button class="bouton-or" id="btn-inscription">Créer mon compte</button>
+          </div>
+          <p class="auth-erreur" id="auth-erreur"></p>
+          <p class="auth-note">Ton compte te permet de retrouver ta bibliothèque et ton journal sur n'importe quel appareil.</p>
+        </div>
+      </div>
+
+      <!-- Connectée -->
+      <div id="zone-connectee" style="display:none">
+        <div class="profil-bloc rempli">
+          <div class="profil-connecte">
+            <div class="profil-salut" id="profil-salut"></div>
+            <button class="btn-deconnexion" id="btn-deconnexion">Déconnexion</button>
+          </div>
+        </div>
+
+      <label for="j-parfum">Parfum du jour</label>
+      <input type="text" id="j-parfum" placeholder="Ex. : Libre · YSL">
+      <label for="j-intention">Intention posée</label>
+      <input type="text" id="j-intention" placeholder="Ex. : j'affirme ma voix aujourd'hui">
+      <label for="j-ressenti">Ressenti vibratoire</label>
+      <textarea id="j-ressenti" placeholder="Ce que la fragrance a éveillé, apaisé, activé…"></textarea>
+      <label for="j-energie">Niveau d'énergie ressenti</label>
+      <div class="curseur-bloc">
+        <input type="range" id="j-energie" min="1" max="10" value="7">
+        <span class="val-e" id="val-e">7</span>
+      </div>
+      <button class="bouton-or" id="btn-consigner">Consigner</button>
+      <div id="entrees" style="margin-top:26px"></div>
+
+      <div class="separateur-titre">✦ Ma Bibliothèque de Scans ✦</div>
+      <p class="invocation" style="margin-top:0">Coche deux parfums pour comparer leurs énergies.</p>
+      <div id="liste-bibliotheque"></div>
+      <button class="bouton-or bouton-ligne" id="btn-comparer" style="display:none">Comparer les 2 parfums sélectionnés</button>
+      <div class="comparaison" id="zone-comparaison"></div>
+      </div>
+
+      <p class="pied-signature">✦ <span class="or">Tanika Parfums</span> · par Nossane ✦</p>
+    </div>
+
+    <!-- ======= ARTICLES ======= -->
+    <div class="ecran" id="articles">
+      <h2>Les Articles</h2>
+      <p class="invocation">Guidance, notes olfactives et vertus vibratoires, par Nossane, pour Tanika.</p>
+
+      <div id="liste-articles"></div>
+
+      <details class="creatrice">
+        <summary>✦ Espace créatrice <span class="badge-verrouille" id="badge-articles">🔒</span> ✦</summary>
+
+        <div class="verrou" id="verrou-articles">
+          <div class="ico-v">🔒</div>
+          <p>Cet espace est réservé à Nossane.<br>Connecte-toi avec ton compte administrateur dans l'onglet « Mon Espace » pour publier un article.</p>
+        </div>
+
+        <div class="zone-creatrice" id="zone-articles">
+        <p class="note-part">Ton article rejoint la bibliothèque visible par tes clientes.</p>
+        <label for="art-titre">Titre de l'article</label>
+        <input type="text" id="art-titre" placeholder="Ex. : Pourquoi le Santal apaise le mental">
+        <label for="art-cat">Catégorie</label>
+        <select id="art-cat">
+          <option>Notes &amp; Vertus</option>
+          <option>Parfum &amp; Énergie</option>
+          <option>Rituels Olfactifs</option>
+          <option>Actualités Tanika</option>
+        </select>
+        <label for="art-texte">Contenu</label>
+        <textarea id="art-texte" style="min-height:160px" placeholder="Écris ton article ici…"></textarea>
+        <button class="bouton-or" id="btn-publier">Publier l'article</button>
+        </div>
+      </details>
+
+      <p class="pied-signature">✦ <span class="or">Tanika Parfums</span> · par Nossane ✦</p>
+    </div>
+
+    <!-- ======= MANTRAS ======= -->
+    <div class="ecran" id="mantras">
+      <h2>Mantras d'Activation</h2>
+      <p class="invocation">Chaque parfum devient un sceau vibratoire quand on l'active par la parole.</p>
+
+      <div class="mantra-jour" id="mantra-jour"></div>
+      <button class="bouton-or bouton-ligne" id="btn-autre-mantra" style="margin-top:12px">Un autre mantra ✦</button>
+
+      <div class="rituel">
+        <h3>Le rituel d'activation</h3>
+        <ol>
+          <li>Dépose ton parfum sur tes <b>points de pulsation</b> : poignets, base du cou, derrière les oreilles.</li>
+          <li>Ferme les yeux et respire profondément trois fois la fragrance.</li>
+          <li>Proclame ton mantra à voix haute, avec fermeté et conviction.</li>
+          <li>Laisse la note se déposer : ton intention est scellée pour la journée.</li>
+        </ol>
+      </div>
+
+      <div class="m-liste" id="m-liste"></div>
+
+      <p class="pied-signature">✦ <span class="or">Tanika Parfums</span> · une création de Nossane ✦</p>
+    </div>
+
+  </div>
+
+  <button class="bulle-chat" id="btn-ouvrir-chat" aria-label="Ouvrir le chat">✦</button>
+
+  <div id="modal-chat">
+    <div class="chat-panneau">
+      <div class="chat-tete">
+        <div>
+          <div class="ct-nom">Guide Tanika</div>
+          <div class="ct-sous">par Nossane · réponses IA</div>
+        </div>
+        <button class="chat-fermer" id="btn-fermer-chat">✕</button>
+      </div>
+      <div class="chat-corps" id="chat-corps"></div>
+      <div class="chat-suggestions" id="chat-suggestions"></div>
+      <div class="chat-saisie">
+        <input type="text" id="chat-input" placeholder="Pose ta question…">
+        <button class="chat-envoyer" id="chat-envoyer">➤</button>
+      </div>
+    </div>
+  </div>
+
+  <nav class="barre-nav" role="tablist">
+    <button class="onglet actif" data-cible="accueil"><span class="ico">⛩</span><span class="lib">Accueil</span></button>
+    <button class="onglet" data-cible="scanner"><span class="ico">📷</span><span class="lib">Scan</span></button>
+    <button class="onglet" data-cible="classeur"><span class="ico">📖</span><span class="lib">Classeur</span></button>
+    <button class="onglet" data-cible="journal"><span class="ico">✨</span><span class="lib">Espace</span></button>
+    <button class="onglet" data-cible="articles"><span class="ico">📰</span><span class="lib">Articles</span></button>
+    <button class="onglet" data-cible="mantras"><span class="ico">📿</span><span class="lib">Mantras</span></button>
+  </nav>
+</div>
+
+<script>
+/* ============ RÉGLAGES ============ */
+/* ⬇️ Remplace par ton vrai lien "Dis-moi quel parfum tu portes" (Shopify) */
+const LIEN_DIS_MOI = "https://tanikaparfums.fr";
+const LIEN_SITE = "https://tanikaparfums.fr";
+
+/* ⬇️⬇️⬇️ COLLE ICI TES CLÉS SUPABASE, Project Settings → API dans ton tableau de bord Supabase */
+const SUPABASE_URL = "https://ppbvxiajdahqautlfyqx.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwYnZ4aWFqZGFocWF1dGxmeXF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NDUyMDUsImV4cCI6MjA5ODUyMTIwNX0.UkjVEkB6ovIqK4B4JikXbt0-3cgfLGiweEQGgUXQwqo";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const CHAKRAS = [
+  {nom:"Racine", hex:"#B5483A"}, {nom:"Sacré", hex:"#D97A2B"}, {nom:"Plexus solaire", hex:"#D9B428"},
+  {nom:"Cœur", hex:"#3E8E5A"}, {nom:"Gorge", hex:"#33689E"}, {nom:"Troisième œil", hex:"#5B3D8C"}, {nom:"Couronne", hex:"#8C79C2"}
+];
+
+const INTENTIONS = [
+  {cle:"amour", label:"Attirer l'amour", chakras:[3]},
+  {cle:"confiance", label:"Gagner en confiance", chakras:[2]},
+  {cle:"abondance", label:"Attirer l'abondance", chakras:[0,1]},
+  {cle:"clarte", label:"Clarté mentale", chakras:[5,6]},
+  {cle:"creativite", label:"Stimuler ma créativité", chakras:[1]},
+  {cle:"ancrage", label:"Ancrage & stabilité", chakras:[0]},
+  {cle:"expression", label:"Affirmer ma parole", chakras:[4]},
+  {cle:"repos", label:"Repos & apaisement", chakras:[3,6]}
+];
+
+const ETATS = [
+  {cle:"fatiguee", label:"Fatiguée"}, {cle:"stressee", label:"Stressée"},
+  {cle:"douce", label:"Douce"}, {cle:"joyeuse", label:"Joyeuse"},
+  {cle:"confiante", label:"Confiante"}, {cle:"neutre", label:"Neutre"}
+];
+
+const MOMENTS = [
+  {cle:"rdv", label:"Rendez-vous", ico:"💞"}, {cle:"manifestation", label:"Manifestation", ico:"🌙"},
+  {cle:"meditation", label:"Méditation", ico:"🧘"}, {cle:"soiree", label:"Soirée", ico:"✨"},
+  {cle:"travail", label:"Travail", ico:"💼"}, {cle:"entretien", label:"Entretien", ico:"🎯"},
+  {cle:"repos", label:"Repos", ico:"🌿"}
+];
+
+/* Répertoire de départ, exemples dans ton cadre à valider / remplacer par tes propres mesures */
+const REPERTOIRE_BASE = [
+  {nom:"Paradoxe", marque:"Prada", code:"", bovis:10800, famille:"Floral musqué", chakra:2,
+   pourquoi:"Sa signature florale poudrée soutient l'affirmation douce de soi. Un parfum qui aide à s'assumer sans dureté.",
+   intentions:["confiance","expression"], moments:["travail","entretien","rdv"],
+   oracle:"« Tu n'as pas besoin de crier pour être entendue. Ta présence suffit. »"},
+  {nom:"Libre", marque:"Yves Saint Laurent", code:"", bovis:11200, famille:"Lavande · fleur d'oranger", chakra:4,
+   pourquoi:"L'alliance lavande–fleur d'oranger libère la parole et l'affirmation. Une fragrance de souveraineté féminine.",
+   intentions:["expression","confiance"], moments:["travail","entretien","manifestation"],
+   oracle:"« Ce que tu tais depuis trop longtemps peut enfin se dire. »"},
+  {nom:"Baccarat Rouge 540", marque:"Maison Francis Kurkdjian", code:"", bovis:12400, famille:"Safran · ambre · bois", chakra:6,
+   pourquoi:"Sa rareté olfactive élève le champ vers les hautes fréquences. Un parfum d'élévation et de présence magnétique.",
+   intentions:["abondance","clarte"], moments:["soiree","rdv","manifestation"],
+   oracle:"« Ta rareté n'est pas à justifier. Elle est à porter. »"},
+  {nom:"J'adore L'Or", marque:"Dior", code:"", bovis:11600, famille:"Floral solaire", chakra:2,
+   pourquoi:"Concentré de lumière florale, il amplifie le rayonnement et la joie intérieure.",
+   intentions:["confiance","abondance"], moments:["soiree","rdv","manifestation"],
+   oracle:"« Ton rayonnement précède tes mots. Laisse-le entrer dans la pièce avant toi. »"},
+  {nom:"Coco Mademoiselle", marque:"Chanel", code:"", bovis:10400, famille:"Floral ambré", chakra:3,
+   pourquoi:"Son sillage structuré soutient l'assurance et l'élégance intérieure.",
+   intentions:["amour","confiance"], moments:["rdv","travail","soiree"],
+   oracle:"« L'élégance commence par la façon dont tu te parles à toi-même. »"},
+  {nom:"Angel", marque:"Mugler", code:"", bovis:9200, famille:"Gourmand · patchouli", chakra:1,
+   pourquoi:"Sa puissance gourmande ancre dans le plaisir et la sensualité, mais demande à être portée en conscience.",
+   intentions:["creativite"], moments:["soiree"],
+   oracle:"« Le plaisir n'est pas une faute. C'est une porte vers ta créativité. »"}
+];
+
+const MANTRAS = [
+  {theme:"Ancrage", txt:"« Je pose mes racines. Ce parfum scelle ma présence à la terre. »"},
+  {theme:"Cœur", txt:"« Mon cœur s'ouvre. Ce parfum est le sceau de mon amour pour moi. »"},
+  {theme:"Confiance", txt:"« Je rayonne sans permission. Ce parfum réveille mon soleil intérieur. »"},
+  {theme:"Parole", txt:"« Ma voix est juste. Ce parfum libère ce que je tais. »"},
+  {theme:"Intuition", txt:"« Je sais avant de comprendre. Ce parfum ouvre mon regard intérieur. »"},
+  {theme:"Créativité", txt:"« Je crée par plaisir. Ce parfum réveille mon élan créateur. »"},
+  {theme:"Souveraineté", txt:"« Je n'ai rien à prouver. Ce parfum est ma signature. »"},
+  {theme:"Abondance", txt:"« Je mérite de recevoir. Ce parfum m'ouvre à l'abondance. »"}
+];
+
+const $ = s => document.querySelector(s);
+const TITRES = {accueil:"TANIKA", scanner:"LE SCAN", classeur:"LE CLASSEUR", journal:"MON ESPACE", articles:"LES ARTICLES", mantras:"MANTRAS"};
+
+let sessionActuelle = null;
+let estAdmin = false;
+
+/* ============ SPLASH & MANDALA ============ */
+setTimeout(()=>$('#splash').classList.add('cache'), 1900);
+(function(){let s='';for(let i=0;i<24;i++)s+=`<ellipse cx="200" cy="80" rx="14" ry="46" transform="rotate(${i*15} 200 200)"/>`;document.getElementById('petales').innerHTML=s;})();
+
+/* ============ NAVIGATION ============ */
+function aller(cible){
+  document.querySelectorAll('.ecran').forEach(e=>e.classList.remove('actif'));
+  document.getElementById(cible).classList.add('actif');
+  document.querySelectorAll('.onglet').forEach(o=>o.classList.toggle('actif',o.dataset.cible===cible));
+  $('#titre-haut').textContent=TITRES[cible];
+  if(cible!=='scanner') arreterCamera();
+}
+document.querySelectorAll('.onglet').forEach(o=>o.addEventListener('click',()=>aller(o.dataset.cible)));
+$('#btn-decouvrir-produits').addEventListener('click',()=>aller('scanner'));
+
+/* ============ DONNÉES (SUPABASE) ============ */
+let ajouts=[], entrees=[], articles=[], profil=null, bibliotheque=[];
+
+async function chargerDonneesPubliques(){
+  try{
+    const {data} = await supabaseClient.from('parfums').select('*').order('bovis',{ascending:false});
+    if(data) ajouts = data;
+  }catch(e){ console.error('Chargement répertoire impossible', e); }
+  try{
+    const {data} = await supabaseClient.from('articles').select('*').order('created_at',{ascending:false});
+    if(data) articles = data.map(a=>({titre:a.titre, categorie:a.categorie, texte:a.texte, date:a.created_at, id:a.id}));
+  }catch(e){ console.error('Chargement articles impossible', e); }
+  afficherClasseur(); afficherArticles();
+}
+
+async function chargerDonneesPersonnelles(){
+  if(!sessionActuelle){ entrees=[]; bibliotheque=[]; profil=null; afficherEntrees(); afficherBibliotheque(); return; }
+  const uid = sessionActuelle.user.id;
+  try{
+    const {data:prof} = await supabaseClient.from('profiles').select('*').eq('id',uid).single();
+    if(prof){ profil={prenom:prof.prenom}; estAdmin = !!prof.is_admin; }
+  }catch(e){ console.error('Chargement profil impossible', e); }
+  try{
+    const {data} = await supabaseClient.from('journal').select('*').eq('user_id',uid).order('created_at',{ascending:false});
+    if(data) entrees = data.map(e=>({date:e.created_at, parfum:e.parfum, intention:e.intention, ressenti:e.ressenti, energie:e.energie, id:e.id}));
+  }catch(e){ console.error('Chargement journal impossible', e); }
+  try{
+    const {data} = await supabaseClient.from('scans').select('*').eq('user_id',uid).order('created_at',{ascending:false});
+    if(data) bibliotheque = data.map(s=>({nom:s.nom, marque:s.marque, bovis:s.bovis, chakra:s.chakra, intention:s.intention, date:s.created_at, id:s.id}));
+  }catch(e){ console.error('Chargement bibliothèque impossible', e); }
+  afficherProfil(); afficherEntrees(); afficherBibliotheque(); mettreAJourEspacesCreatrice();
+}
+
+function mettreAJourEspacesCreatrice(){
+  document.querySelectorAll('.verrou').forEach(v=>v.style.display = estAdmin ? 'none' : 'block');
+  document.querySelectorAll('.zone-creatrice').forEach(z=>z.classList.toggle('visible', estAdmin));
+  document.querySelectorAll('.badge-verrouille').forEach(b=>b.textContent = estAdmin ? '🔓' : '🔒');
+  afficherArticles(); // pour afficher/masquer les boutons supprimer
+}
+
+async function verifierSession(){
+  const {data:{session}} = await supabaseClient.auth.getSession();
+  sessionActuelle = session;
+  afficherEtatConnexion();
+  await chargerDonneesPersonnelles();
+}
+supabaseClient.auth.onAuthStateChange((event, session)=>{
+  sessionActuelle = session;
+  afficherEtatConnexion();
+  chargerDonneesPersonnelles();
+});
+
+function repertoire(){ return [...ajouts, ...REPERTOIRE_BASE]; }
+
+/* ============ SCANNER D'INTENTION ============ */
+let etatChoisi = null, intentionChoisie = null;
+
+function construireChipsIntention(){
+  $('#chips-etat').innerHTML = ETATS.map(e=>`<button class="chip" data-e="${e.cle}">${e.label}</button>`).join('');
+  $('#chips-intention').innerHTML = INTENTIONS.map(i=>`<button class="chip" data-i="${i.cle}">${i.label}</button>`).join('');
+
+  $('#chips-etat').querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>{
+    etatChoisi = ETATS.find(e=>e.cle===b.dataset.e);
+    $('#chips-etat').querySelectorAll('.chip').forEach(c=>c.classList.remove('choisi'));
+    b.classList.add('choisi');
+    $('#resume-etat').style.display='none';
+    $('#chips-etat').style.display='none';
+    $('#resume-intention').style.display='block';
+    $('#chips-intention').style.display='flex';
+  }));
+  $('#chips-intention').querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>{
+    intentionChoisie = INTENTIONS.find(i=>i.cle===b.dataset.i);
+    $('#chips-intention').querySelectorAll('.chip').forEach(c=>c.classList.remove('choisi'));
+    b.classList.add('choisi');
+    $('#resume-intention').textContent = `✦ Tu portes aujourd'hui l'intention : ${intentionChoisie.label} ✦`;
+    $('#chips-intention').style.display='none';
+    $('#btn-modifier-intention').style.display='block';
+  }));
+}
+$('#btn-modifier-intention').addEventListener('click',()=>{
+  etatChoisi=null; intentionChoisie=null;
+  $('#resume-etat').textContent="Comment te sens-tu aujourd'hui ?";
+  $('#resume-etat').style.display='block'; $('#chips-etat').style.display='flex';
+  $('#resume-intention').style.display='none'; $('#chips-intention').style.display='none';
+  $('#btn-modifier-intention').style.display='none';
+  $('#chips-etat').querySelectorAll('.chip').forEach(c=>c.classList.remove('choisi'));
+});
+construireChipsIntention();
+
+/* ============ VIBE ============ */
+function vibe(bovis){
+  if(bovis>=12000) return {cls:'tres-haute', mini:'mb-tres', badge:'✦ Vibre très haut ✦', label:'Très Haute'};
+  if(bovis>=10000) return {cls:'haute', mini:'mb-haute', badge:'✦ Vibre haut ✦', label:'Haute'};
+  if(bovis>=8000)  return {cls:'positive', mini:'mb-pos', badge:'Vibration positive', label:'Positive'};
+  return {cls:'basse', mini:'mb-basse', badge:'Vibration à réveiller', label:'À réveiller'};
+}
+
+/* ============ SCANNER ============ */
+let flux=null, detecteur=null, boucle=null;
+
+function afficherVerdict(p){
+  const v=vibe(p.bovis), ch=CHAKRAS[p.chakra]||CHAKRAS[3];
+  $('#non-trouve').classList.remove('visible');
+  const haut = p.bovis>=10000;
+  const pIntentions = p.intentions||[], pMoments = p.moments||[];
+
+  let blocCompat='';
+  if(intentionChoisie){
+    const aligne = pIntentions.includes(intentionChoisie.cle) ||
+      (p.chakra!==undefined && intentionChoisie.chakras.includes(p.chakra));
+    blocCompat = aligne
+      ? `<div class="v-compat oui"><b>✦ Aligné avec ton intention</b>« ${intentionChoisie.label} », cette fragrance soutient directement cette énergie aujourd'hui.</div>`
+      : `<div class="v-compat non"><b>Pas la fragrance du jour</b>Pour « ${intentionChoisie.label} », ce parfum n'est pas le plus soutenant. Il reste une belle énergie, pour un autre moment.</div>`;
+  }
+
+  const blocMoments = pMoments.length
+    ? `<div class="v-moments">${pMoments.map(m=>{const mo=MOMENTS.find(x=>x.cle===m); return mo?`<span class="v-tag">${mo.ico} ${mo.label}</span>`:'';}).join('')}</div>`
+    : '';
+
+  const blocOracle = p.oracle
+    ? `<div class="v-oracle"><div class="et-oracle">Carte Oracle</div><div class="txt-oracle">${p.oracle}</div></div>`
+    : '';
+
+  $('#verdict').innerHTML=`
+    <div class="v-carte v-${v.cls}">
+      <div class="v-badge">${v.badge}</div>
+      <div class="v-nom">${p.nom}</div>
+      <div class="v-marque">${p.marque||''}</div>
+      <div class="v-bovis">${Number(p.bovis).toLocaleString('fr-FR')}<span class="v-unite"> U.B.</span></div>
+      <div class="v-pastille"><i style="background:${ch.hex}"></i>Résonne au chakra ${ch.nom}</div>
+      ${p.famille?`<div class="v-notes">${p.famille}</div>`:''}
+      <div class="v-pourquoi">${p.pourquoi||''}</div>
+      ${blocCompat}
+      ${blocMoments}
+      ${blocOracle}
+      <div class="cta-bloc">
+        <div class="cta-txt">${haut
+          ? "Envie de savoir s'il est fait pour <b>ton</b> énergie ?"
+          : "Envie de trouver le parfum qui vibre vraiment pour <b>toi</b> ?"}</div>
+        <a class="bouton-cta" href="${LIEN_DIS_MOI}" target="_blank" rel="noopener">✦ Dis-moi quel parfum tu portes ✦</a>
+        <div style="text-align:center;font-size:12.5px;font-style:italic;opacity:.6;margin-top:12px">mesuré par Tanika ✦ Nossane</div>
+      </div>
+    </div>`;
+  $('#verdict').classList.add('visible');
+  $('#verdict').scrollIntoView({behavior:'smooth',block:'nearest'});
+  enregistrerDansBibliotheque(p);
+}
+
+function chercherParNom(q){
+  q=q.trim().toLowerCase();
+  if(!q) return;
+  const p = repertoire().find(x=>(x.nom+' '+x.marque).toLowerCase().includes(q));
+  if(p){ afficherVerdict(p); }
+  else{ montrerNonTrouve(q); }
+}
+function chercherParCode(code){
+  const p = repertoire().find(x=>x.code && String(x.code)===String(code));
+  if(p){ afficherVerdict(p); return true; }
+  return false;
+}
+function montrerNonTrouve(terme){
+  $('#verdict').classList.remove('visible');
+  $('#non-trouve').innerHTML = `« ${terme} » n'est pas encore dans le répertoire.<br>Ajoute-le depuis le Classeur, ou propose-le à Nossane. ✦`;
+  $('#non-trouve').classList.add('visible');
+}
+
+$('#btn-chercher').addEventListener('click',()=>chercherParNom($('#scan-nom').value));
+$('#scan-nom').addEventListener('keydown',e=>{if(e.key==='Enter')chercherParNom(e.target.value);});
+
+async function demarrerCamera(){
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    montrerNonTrouve("caméra indisponible ici"); 
+    $('#non-trouve').innerHTML="La caméra n'est pas accessible dans cet aperçu. Une fois l'app installée sur ton téléphone, le scan du code-barres fonctionnera. En attendant, utilise la recherche par nom. ✦";
+    $('#non-trouve').classList.add('visible');
+    return;
+  }
+  try{
+    flux = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+    const video=$('#video'); video.srcObject=flux; await video.play();
+    $('#video-zone').classList.add('actif'); $('#scan-accueil').style.display='none';
+    $('#btn-camera').textContent='Arrêter la caméra';
+    if('BarcodeDetector' in window){
+      detecteur = new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e']});
+      scannerBoucle();
+    }
+  }catch(e){
+    montrerNonTrouve("accès caméra refusé");
+    $('#non-trouve').innerHTML="L'accès à la caméra a été refusé. Autorise-le dans les réglages, ou utilise la recherche par nom. ✦";
+    $('#non-trouve').classList.add('visible');
+  }
+}
+async function scannerBoucle(){
+  if(!detecteur || !flux) return;
+  try{
+    const codes = await detecteur.detect($('#video'));
+    if(codes.length){
+      const code = codes[0].rawValue;
+      if(chercherParCode(code)){ arreterCamera(); return; }
+      else{ arreterCamera(); montrerNonTrouve("code "+code); return; }
+    }
+  }catch(e){}
+  boucle = requestAnimationFrame(scannerBoucle);
+}
+function arreterCamera(){
+  if(boucle) cancelAnimationFrame(boucle);
+  if(flux){ flux.getTracks().forEach(t=>t.stop()); flux=null; }
+  $('#video-zone').classList.remove('actif'); 
+  const sa=$('#scan-accueil'); if(sa) sa.style.display='block';
+  const bc=$('#btn-camera'); if(bc) bc.textContent='Activer la caméra';
+}
+$('#btn-camera').addEventListener('click',()=>{ flux ? arreterCamera() : demarrerCamera(); });
+
+/* ============ CLASSEUR ============ */
+function badgeClasse(v){return v.mini;}
+function afficherClasseur(filtre=''){
+  const q=filtre.trim().toLowerCase();
+  let liste = repertoire();
+  if(q) liste = liste.filter(p=>(p.nom+' '+p.marque+' '+(p.famille||'')).toLowerCase().includes(q));
+  liste.sort((a,b)=>b.bovis-a.bovis);
+  $('#compteur').textContent = `${liste.length} parfum${liste.length>1?'s':''} référencé${liste.length>1?'s':''}`;
+  const zone=$('#liste-classeur');
+  if(!liste.length){ zone.innerHTML='<p class="vide">Aucun parfum ne correspond. ✦</p>'; return; }
+  zone.innerHTML = liste.map((p,i)=>{
+    const v=vibe(p.bovis), ch=CHAKRAS[p.chakra]||CHAKRAS[3];
+    return `<div class="parfum" data-i="${i}">
+      <div class="p-tete">
+        <div><div class="p-nom">${p.nom}</div><div class="p-marque">${p.marque||''}</div></div>
+        <div class="p-bovis"><b>${Number(p.bovis).toLocaleString('fr-FR')}</b>
+          <span class="p-mini-badge ${badgeClasse(v)}">${v.label}</span></div>
+      </div>
+      <div class="p-detail">
+        ${p.famille?`<div class="l"><b>Famille :</b> ${p.famille}</div>`:''}
+        <div class="l"><b>Résonance :</b> chakra ${ch.nom}</div>
+        ${p.pourquoi?`<div class="l">${p.pourquoi}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+  zone.querySelectorAll('.parfum').forEach(el=>el.addEventListener('click',()=>el.classList.toggle('ouvert')));
+}
+$('#filtre').addEventListener('input',e=>afficherClasseur(e.target.value));
+
+/* Chips multi-sélection pour le formulaire d'ajout */
+let aIntentionsChoisies=[], aMomentsChoisis=[];
+$('#a-intentions').innerHTML = INTENTIONS.map(i=>`<button type="button" class="chip" data-i="${i.cle}">${i.label}</button>`).join('');
+$('#a-moments').innerHTML = MOMENTS.map(m=>`<button type="button" class="chip" data-m="${m.cle}">${m.ico} ${m.label}</button>`).join('');
+$('#a-intentions').querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>{
+  b.classList.toggle('choisi');
+  aIntentionsChoisies = [...$('#a-intentions').querySelectorAll('.chip.choisi')].map(c=>c.dataset.i);
+}));
+$('#a-moments').querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>{
+  b.classList.toggle('choisi');
+  aMomentsChoisis = [...$('#a-moments').querySelectorAll('.chip.choisi')].map(c=>c.dataset.m);
+}));
+
+$('#btn-ajouter').addEventListener('click',async()=>{
+  const nom=$('#a-nom').value.trim(), bovis=Number($('#a-bovis').value);
+  if(!nom){ $('#a-nom').focus(); return; }
+  if(!bovis){ $('#a-bovis').focus(); return; }
+  if(!sessionActuelle || !estAdmin){ return; }
+  const {error} = await supabaseClient.from('parfums').insert({
+    nom, marque:$('#a-marque').value.trim(), code:$('#a-code').value.trim(),
+    bovis, famille:$('#a-famille').value.trim(),
+    chakra:Number($('#a-chakra').value), pourquoi:$('#a-pourquoi').value.trim(),
+    intentions:[...aIntentionsChoisies], moments:[...aMomentsChoisis],
+    oracle:$('#a-oracle').value.trim(), created_by:sessionActuelle.user.id
+  });
+  if(error){ console.error(error); $('#btn-ajouter').textContent="Erreur, réessaie"; setTimeout(()=>$('#btn-ajouter').textContent='Ajouter au répertoire',2000); return; }
+  ['a-nom','a-marque','a-code','a-bovis','a-famille','a-pourquoi','a-oracle'].forEach(id=>$('#'+id).value='');
+  $('#a-intentions').querySelectorAll('.chip').forEach(c=>c.classList.remove('choisi'));
+  $('#a-moments').querySelectorAll('.chip').forEach(c=>c.classList.remove('choisi'));
+  aIntentionsChoisies=[]; aMomentsChoisis=[];
+  await chargerDonneesPubliques();
+  $('#btn-ajouter').textContent='✦ Ajouté ✦';
+  setTimeout(()=>$('#btn-ajouter').textContent='Ajouter au répertoire',1500);
+});
+
+/* ============ PROFIL LÉGER ============ */
+function afficherProfil(){
+  if(profil && profil.prenom){
+    $('#profil-salut').innerHTML = `✦ Bonjour ${profil.prenom} ✦${estAdmin?'<span class="admin-etiquette">Admin</span>':''}`;
+  }
+}
+function afficherEtatConnexion(){
+  const connectee = !!sessionActuelle;
+  $('#zone-connectee').style.display = connectee ? 'block' : 'none';
+  $('#zone-non-connectee').style.display = connectee ? 'none' : 'block';
+}
+
+/* Bascule entre les onglets Connexion / Inscription */
+$('#onglet-connexion').addEventListener('click',()=>{
+  $('#onglet-connexion').classList.add('actif'); $('#onglet-inscription').classList.remove('actif');
+  $('#form-connexion').style.display='block'; $('#form-inscription').style.display='none';
+  $('#auth-erreur').classList.remove('visible');
+});
+$('#onglet-inscription').addEventListener('click',()=>{
+  $('#onglet-inscription').classList.add('actif'); $('#onglet-connexion').classList.remove('actif');
+  $('#form-inscription').style.display='block'; $('#form-connexion').style.display='none';
+  $('#auth-erreur').classList.remove('visible');
+});
+
+function afficherErreurAuth(msg){
+  $('#auth-erreur').textContent = msg;
+  $('#auth-erreur').classList.add('visible');
+}
+
+$('#btn-connexion').addEventListener('click',async()=>{
+  const email=$('#conn-email').value.trim(), motdepasse=$('#conn-motdepasse').value;
+  if(!email || !motdepasse){ afficherErreurAuth('Entre ton email et ton mot de passe.'); return; }
+  const {error} = await supabaseClient.auth.signInWithPassword({email, password:motdepasse});
+  if(error){ afficherErreurAuth('Email ou mot de passe incorrect.'); return; }
+  $('#auth-erreur').classList.remove('visible');
+});
+
+$('#btn-inscription').addEventListener('click',async()=>{
+  const prenom=$('#insc-prenom').value.trim(), email=$('#insc-email').value.trim(), motdepasse=$('#insc-motdepasse').value;
+  if(!prenom){ afficherErreurAuth('Dis-nous ton prénom.'); return; }
+  if(!email){ afficherErreurAuth('Entre ton email.'); return; }
+  if(motdepasse.length<6){ afficherErreurAuth('Le mot de passe doit faire au moins 6 caractères.'); return; }
+  const {error} = await supabaseClient.auth.signUp({
+    email, password:motdepasse,
+    options:{ data:{ prenom } }
+  });
+  if(error){ afficherErreurAuth(error.message.includes('already') ? 'Un compte existe déjà avec cet email.' : "Erreur à l'inscription. Réessaie."); return; }
+  $('#auth-erreur').classList.remove('visible');
+});
+
+$('#btn-deconnexion').addEventListener('click',async()=>{
+  await supabaseClient.auth.signOut();
+});
+
+/* ============ BIBLIOTHÈQUE PERSONNELLE ============ */
+async function enregistrerDansBibliotheque(p){
+  if(!sessionActuelle) return;
+  const uid = sessionActuelle.user.id;
+  const entree = {
+    user_id:uid, nom:p.nom, marque:p.marque||'', bovis:p.bovis, chakra:p.chakra,
+    intention: intentionChoisie ? intentionChoisie.label : ''
+  };
+  const {error} = await supabaseClient.from('scans').insert(entree);
+  if(error){ console.error('Enregistrement scan impossible', error); return; }
+  await chargerDonneesPersonnelles();
+}
+function afficherBibliotheque(){
+  const zone=$('#liste-bibliotheque');
+  if(!zone) return;
+  if(!sessionActuelle){
+    zone.innerHTML='<p class="vide">Connecte-toi pour voir et garder ta bibliothèque de scans. ✦</p>';
+    $('#btn-comparer').style.display='none';
+    return;
+  }
+  if(!bibliotheque.length){
+    zone.innerHTML='<p class="vide">Aucun scan enregistré pour l\'instant.<br>Chaque parfum que tu scannes rejoint ta bibliothèque. ✦</p>';
+    $('#btn-comparer').style.display='none';
+    return;
+  }
+  zone.innerHTML = bibliotheque.map((b,i)=>`
+    <div class="bib-carte">
+      <input type="checkbox" class="bib-check" data-i="${i}">
+      <div class="bib-info">
+        <div class="bib-nom">${b.nom}</div>
+        <div class="bib-meta">${b.marque?b.marque+' · ':''}${formatDateArticle(b.date)}</div>
+      </div>
+      <div class="bib-bovis">${Number(b.bovis).toLocaleString('fr-FR')}</div>
+    </div>`).join('');
+  zone.querySelectorAll('.bib-check').forEach(c=>c.addEventListener('change',majBoutonComparer));
+  majBoutonComparer();
+}
+function majBoutonComparer(){
+  const coches = [...document.querySelectorAll('.bib-check:checked')];
+  $('#btn-comparer').style.display = coches.length===2 ? 'block' : 'none';
+  if(coches.length!==2) $('#zone-comparaison').classList.remove('visible');
+}
+$('#btn-comparer').addEventListener('click',()=>{
+  const coches = [...document.querySelectorAll('.bib-check:checked')].map(c=>bibliotheque[Number(c.dataset.i)]);
+  if(coches.length!==2) return;
+  const maxBovis = Math.max(...coches.map(c=>c.bovis), 14000);
+  $('#zone-comparaison').innerHTML = coches.map(c=>{
+    const ch=CHAKRAS[c.chakra]||CHAKRAS[3];
+    return `<div class="comp-ligne">
+      <div class="comp-nom">${c.nom}</div>
+      <div class="comp-barre-fond"><div class="comp-barre" style="width:${(c.bovis/maxBovis*100).toFixed(0)}%"></div></div>
+      <div class="comp-val">${Number(c.bovis).toLocaleString('fr-FR')}</div>
+    </div>
+    <div style="text-align:center;font-style:italic;color:var(--brun);font-size:13.5px;margin-top:2px">Chakra ${ch.nom}</div>`;
+  }).join('<div style="height:10px"></div>');
+  $('#zone-comparaison').classList.add('visible');
+  $('#zone-comparaison').scrollIntoView({behavior:'smooth',block:'nearest'});
+});
+
+/* ============ JOURNAL ============ */
+$('#j-energie').addEventListener('input',e=>$('#val-e').textContent=e.target.value);
+function formatDate(iso){try{return new Date(iso).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});}catch(e){return iso;}}
+function afficherEntrees(){
+  const zone=$('#entrees');
+  if(!sessionActuelle){ zone.innerHTML='<p class="vide">Connecte-toi pour tenir ton journal de bord. ✦</p>'; return; }
+  if(!entrees.length){ zone.innerHTML='<p class="vide">Ton journal est encore vierge.<br>La première page t\'attend. ✦</p>'; return; }
+  zone.innerHTML=entrees.map((e,i)=>`
+    <div class="entree">
+      <button class="suppr" data-i="${i}" aria-label="Supprimer">✕</button>
+      <div class="date">${formatDate(e.date)}</div>
+      <div class="parf">${e.parfum}</div>
+      ${e.intention?`<div class="l"><b>Intention :</b> ${e.intention}</div>`:''}
+      ${e.ressenti?`<div class="l"><b>Ressenti :</b> ${e.ressenti}</div>`:''}
+      <div class="l"><b>Énergie :</b> ${e.energie}/10</div>
+      <div class="jauge"><i style="width:${e.energie*10}%"></i></div>
+    </div>`).join('');
+  zone.querySelectorAll('.suppr').forEach(b=>b.addEventListener('click',async()=>{
+    const entree = entrees[Number(b.dataset.i)];
+    if(entree.id) await supabaseClient.from('journal').delete().eq('id',entree.id);
+    entrees.splice(Number(b.dataset.i),1); afficherEntrees();
+  }));
+}
+$('#btn-consigner').addEventListener('click',async()=>{
+  const parfum=$('#j-parfum').value.trim();
+  if(!parfum){ $('#j-parfum').focus(); return; }
+  if(!sessionActuelle) return;
+  const {error} = await supabaseClient.from('journal').insert({
+    user_id:sessionActuelle.user.id, parfum,
+    intention:$('#j-intention').value.trim(), ressenti:$('#j-ressenti').value.trim(),
+    energie:Number($('#j-energie').value)
+  });
+  if(error){ console.error('Consignation impossible', error); return; }
+  $('#j-parfum').value='';$('#j-intention').value='';$('#j-ressenti').value='';
+  await chargerDonneesPersonnelles();
+});
+
+/* ============ ARTICLES ============ */
+function formatDateArticle(iso){try{return new Date(iso).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});}catch(e){return iso;}}
+function afficherArticles(){
+  const zone=$('#liste-articles');
+  if(!articles.length){
+    zone.innerHTML='<p class="vide">Aucun article publié pour l\'instant.<br>Nossane prépare ses premières guidances. ✦</p>';
+    return;
+  }
+  const tries=[...articles].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  zone.innerHTML = tries.map((a)=>{
+    const i = articles.indexOf(a);
+    return `<div class="article" data-i="${i}">
+      <div class="art-tete">
+        <div>
+          <div class="art-cat">${a.categorie}</div>
+          <div class="art-titre">${a.titre}</div>
+          <div class="art-meta">par Nossane · ${formatDateArticle(a.date)}</div>
+        </div>
+        ${estAdmin?`<button class="suppr-art" data-i="${i}" aria-label="Supprimer l'article">✕</button>`:''}
+      </div>
+      <div class="art-corps"><div class="art-texte">${a.texte}</div></div>
+    </div>`;
+  }).join('');
+  zone.querySelectorAll('.article').forEach(el=>{
+    el.addEventListener('click',(ev)=>{
+      if(ev.target.classList.contains('suppr-art')) return;
+      el.classList.toggle('ouvert');
+    });
+  });
+  zone.querySelectorAll('.suppr-art').forEach(b=>{
+    b.addEventListener('click',async(ev)=>{
+      ev.stopPropagation();
+      const art = articles[Number(b.dataset.i)];
+      if(art.id) await supabaseClient.from('articles').delete().eq('id',art.id);
+      await chargerDonneesPubliques();
+    });
+  });
+}
+$('#btn-publier').addEventListener('click',async()=>{
+  const titre=$('#art-titre').value.trim(), texte=$('#art-texte').value.trim();
+  if(!titre){ $('#art-titre').focus(); return; }
+  if(!texte){ $('#art-texte').focus(); return; }
+  if(!sessionActuelle || !estAdmin) return;
+  const {error} = await supabaseClient.from('articles').insert({
+    titre, categorie:$('#art-cat').value, texte, created_by:sessionActuelle.user.id
+  });
+  if(error){ console.error('Publication impossible', error); return; }
+  $('#art-titre').value=''; $('#art-texte').value='';
+  await chargerDonneesPubliques();
+  $('#btn-publier').textContent='✦ Publié ✦';
+  setTimeout(()=>$('#btn-publier').textContent="Publier l'article",1500);
+});
+
+/* ============ MANTRAS ============ */
+function mantraAleatoire(){
+  const m=MANTRAS[Math.floor(Math.random()*MANTRAS.length)];
+  $('#mantra-jour').innerHTML=`<div class="et">Mantra du jour</div><div class="txt">${m.txt}</div><div class="theme">✦ ${m.theme} ✦</div>`;
+}
+$('#btn-autre-mantra').addEventListener('click',mantraAleatoire);
+mantraAleatoire();
+$('#m-liste').innerHTML = MANTRAS.map(m=>`<div class="m-carte"><div class="theme">${m.theme}</div><div class="txt">${m.txt}</div></div>`).join('');
+
+/* ============ CHATBOT GUIDE TANIKA ============ */
+const SYSTEME_CHAT = `Tu es le Guide Tanika, l'assistant conversationnel de Tanika Parfums, une maison de parfumerie énergétique fondée par Nossane, Prêtresse Alchimiste et pionnière de la parfumerie vibratoire.
+
+Ce que propose Tanika :
+- Le Scan Olfactif : une lecture vibratoire au pendule qui révèle la famille olfactive de résonance d'une personne.
+- La Précommande de Parfum Personnalisé : une fragrance composée à partir de cette lecture.
+- La Séance de Guidance Vibratoire (visio) : environ 60 minutes, lecture au pendule, Décrets de Libération et d'Activation proclamés en direct, synthèse envoyée sous 24h.
+- L'Olfactothèque (cette application) : scan de parfums du commerce pour connaître leur fréquence vibratoire, classeur, journal, articles, mantras.
+
+Consignes de ton :
+- Tutoie la personne, ton chaleureux, clair, un peu poétique mais jamais confus.
+- Réponses courtes (3-5 phrases maximum), adaptées à un chat mobile.
+- Ne donne JAMAIS de prix précis (ils peuvent avoir changé), invite à consulter le site ou réserver pour connaître les tarifs actuels.
+- Termine tes réponses, quand c'est pertinent, en invitant à visiter tanikaparfums.fr ou à utiliser le scan de l'app.
+- Reste centré sur Tanika, le parfum énergétique, la radiesthésie olfactive et l'usage de l'app. Si la question sort de ce cadre, réoriente poliment.
+- Tu n'es pas Nossane elle-même, tu es son assistant. Ne prétends jamais être elle.`;
+
+let historiqueChat = [];
+
+function formaterTexteChat(txt){
+  return txt.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+}
+function ajouterMessageChat(role, texte){
+  const div = document.createElement('div');
+  div.className = 'msg ' + (role==='user' ? 'msg-user' : 'msg-bot');
+  div.innerHTML = role==='user' ? texte : formaterTexteChat(texte);
+  $('#chat-corps').appendChild(div);
+  $('#chat-corps').scrollTop = $('#chat-corps').scrollHeight;
+  return div;
+}
+function afficherTape(){
+  const div = document.createElement('div');
+  div.className = 'msg msg-bot msg-tape-conteneur';
+  div.innerHTML = '<div class="msg-tape"><span></span><span></span><span></span></div>';
+  div.style.padding = '0';
+  $('#chat-corps').appendChild(div);
+  $('#chat-corps').scrollTop = $('#chat-corps').scrollHeight;
+  return div;
+}
+
+async function envoyerMessageChat(texte){
+  texte = texte.trim();
+  if(!texte) return;
+  ajouterMessageChat('user', texte);
+  historiqueChat.push({role:'user', content:texte});
+  $('#chat-input').value='';
+  $('#chat-suggestions').innerHTML='';
+
+  const bulleTape = afficherTape();
+  try{
+    const reponse = await fetch("https://api.anthropic.com/v1/messages", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:"claude-sonnet-4-6",
+        max_tokens:1000,
+        system:SYSTEME_CHAT,
+        messages:historiqueChat
+      })
+    });
+    const data = await reponse.json();
+    const texteReponse = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').trim()
+      || "Je n'ai pas pu répondre à l'instant. Tu peux réessayer, ou visiter directement tanikaparfums.fr ✦";
+    bulleTape.remove();
+    ajouterMessageChat('bot', texteReponse);
+    historiqueChat.push({role:'assistant', content:texteReponse});
+  }catch(e){
+    bulleTape.remove();
+    ajouterMessageChat('bot', "Une erreur est survenue. En attendant, tu peux visiter tanikaparfums.fr ou explorer le Scan dans l'app ✦");
+  }
+}
+
+const SUGGESTIONS_CHAT = [
+  "Comment fonctionne le scan de parfum ?",
+  "Je veux réserver un scan complet",
+  "Qu'est-ce que Tanika ?",
+  "Comment activer mon parfum ?"
+];
+function construireSuggestionsChat(){
+  $('#chat-suggestions').innerHTML = SUGGESTIONS_CHAT.map(s=>`<button class="chat-chip">${s}</button>`).join('');
+  $('#chat-suggestions').querySelectorAll('.chat-chip').forEach(b=>{
+    b.addEventListener('click',()=>envoyerMessageChat(b.textContent));
+  });
+}
+
+let chatDejaOuvert = false;
+$('#btn-ouvrir-chat').addEventListener('click',()=>{
+  $('#modal-chat').classList.add('visible');
+  if(!chatDejaOuvert){
+    chatDejaOuvert = true;
+    ajouterMessageChat('bot', "✦ Bonjour, je suis le Guide Tanika. Je peux répondre à tes questions sur le Scan Olfactif, la Guidance Vibratoire, ou t'orienter vers tanikaparfums.fr. Que veux-tu savoir ?");
+    construireSuggestionsChat();
+  }
+});
+$('#btn-fermer-chat').addEventListener('click',()=>$('#modal-chat').classList.remove('visible'));
+$('#modal-chat').addEventListener('click',(e)=>{ if(e.target.id==='modal-chat') $('#modal-chat').classList.remove('visible'); });
+$('#chat-envoyer').addEventListener('click',()=>envoyerMessageChat($('#chat-input').value));
+$('#chat-input').addEventListener('keydown',e=>{ if(e.key==='Enter') envoyerMessageChat($('#chat-input').value); });
+
+/* ============ INIT ============ */
+chargerDonneesPubliques();
+verifierSession();
+</script>
+</body>
+</html>
