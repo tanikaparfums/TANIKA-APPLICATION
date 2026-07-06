@@ -1,0 +1,5 @@
+[build]
+  functions = "netlify/functions"
+
+[functions."envoyer-notification-quotidienne"]
+  schedule = "0 8 * * *"
