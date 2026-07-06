@@ -5,9 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#FBF7EE">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icone-192.png">
 <title>L'Olfactothèque Tanika</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/@zxing/library@0.21.3"></script>
 <style>
   :root{
     --ivoire:#FBF7EE; --ivoire-fonce:#F3EBD9;
@@ -129,6 +132,19 @@
   .v-basse .v-badge{color:var(--terre)}
   .v-nom{font-family:'Cinzel Decorative',serif;font-size:22px;margin-top:12px;line-height:1.25}
   .v-marque{font-style:italic;opacity:.8;margin-top:2px;font-size:16px}
+  .v-image{width:100%;max-width:220px;aspect-ratio:3/4;object-fit:cover;border-radius:12px;margin:14px auto 0;display:block;box-shadow:0 4px 14px rgba(0,0,0,.15)}
+  .p-image{width:46px;height:60px;object-fit:cover;border-radius:8px;flex-shrink:0;border:1px solid var(--or-pale)}
+  .art-image{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px;margin-top:10px}
+  .zone-upload{border:1px dashed var(--or-pale);border-radius:12px;padding:14px;text-align:center;margin-top:6px;background:#FFFDF7}
+  .zone-upload input[type=file]{width:100%;font-size:14px;color:var(--brun)}
+  .apercu-image{max-width:120px;max-height:120px;border-radius:8px;margin-top:10px;display:none}
+  .apercu-image.visible{display:block;margin-left:auto;margin-right:auto}
+  .upload-statut{font-style:italic;color:var(--brun);font-size:13.5px;margin-top:6px;min-height:16px}
+  .resultat-recherche{display:flex;align-items:center;gap:10px;border:1px solid var(--or-pale);background:#fff;border-radius:10px;padding:10px 12px;margin-top:8px;cursor:pointer;text-align:left}
+  .resultat-recherche:active{transform:scale(.98)}
+  .resultat-recherche img{width:36px;height:46px;object-fit:cover;border-radius:6px;flex-shrink:0;background:var(--ivoire-fonce)}
+  .resultat-recherche .rr-nom{font-family:'Cinzel Decorative',serif;font-size:14px;color:var(--royal);line-height:1.3}
+  .resultat-recherche .rr-marque{font-style:italic;color:var(--brun);font-size:13px}
   .v-bovis{font-family:'Cinzel Decorative',serif;font-size:40px;margin-top:16px;letter-spacing:.02em}
   .v-unite{font-size:12px;letter-spacing:.16em;text-transform:uppercase;opacity:.75;font-family:'Cinzel Decorative',serif}
   .v-pastille{display:inline-flex;align-items:center;gap:7px;margin-top:12px;font-size:15px}
@@ -249,6 +265,10 @@
   .mantra-jour .et{font-family:'Cinzel Decorative',serif;font-size:10px;letter-spacing:.2em;color:var(--or-clair);text-transform:uppercase}
   .mantra-jour .txt{font-style:italic;font-size:20px;line-height:1.45;margin-top:12px}
   .mantra-jour .theme{font-family:'Cinzel Decorative',serif;font-size:11px;letter-spacing:.14em;color:var(--or-clair);margin-top:14px;text-transform:uppercase}
+  .idj-label{font-family:'Cinzel Decorative',serif;font-size:15px;color:var(--royal);text-align:center;letter-spacing:.04em}
+  .idj-notes{text-align:center;font-style:italic;color:var(--brun);margin-top:8px;font-size:15.5px;line-height:1.4}
+  .idj-notes b{font-style:normal;color:var(--or);font-family:'Cinzel Decorative',serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:4px}
+  .idj-mantra{text-align:center;font-style:italic;margin-top:14px;font-size:17px;line-height:1.5;color:var(--encre)}
   .rituel{border:1px solid var(--or-pale);border-radius:14px;background:#FFFDF7;padding:16px;margin-top:16px}
   .rituel h3{font-family:'Cinzel Decorative',serif;font-size:12px;letter-spacing:.12em;color:var(--royal);text-transform:uppercase;text-align:center;margin-bottom:10px}
   .rituel ol{list-style:none;counter-reset:r}
@@ -437,10 +457,17 @@
 
         <div class="zone-creatrice" id="zone-classeur">
         <p class="note-part">Tes ajouts rejoignent le répertoire visible par tes clientes.</p>
+
         <label for="a-nom">Nom du parfum</label>
         <input type="text" id="a-nom" placeholder="Ex. : Paradoxe">
         <label for="a-marque">Marque</label>
         <input type="text" id="a-marque" placeholder="Ex. : Prada">
+        <label for="a-image">Photo du flacon (facultatif)</label>
+        <div class="zone-upload">
+          <input type="file" id="a-image" accept="image/*">
+          <img class="apercu-image" id="apercu-a-image" alt="Aperçu">
+          <div class="upload-statut" id="statut-a-image"></div>
+        </div>
         <label for="a-code">Code-barres (facultatif, pour le scan)</label>
         <input type="number" id="a-code" placeholder="Ex. : 3614273760980">
         <label for="a-bovis">Taux vibratoire (Bovis / U.B.)</label>
@@ -496,6 +523,7 @@
             <button class="bouton-or" id="btn-inscription">Créer mon compte</button>
           </div>
           <p class="auth-erreur" id="auth-erreur"></p>
+          <p class="auth-erreur" id="auth-succes" style="color:var(--vert)"></p>
           <p class="auth-note">Ton compte te permet de retrouver ta bibliothèque et ton journal sur n'importe quel appareil.</p>
         </div>
       </div>
@@ -561,6 +589,12 @@
         </select>
         <label for="art-texte">Contenu</label>
         <textarea id="art-texte" style="min-height:160px" placeholder="Écris ton article ici…"></textarea>
+        <label for="art-image">Image d'illustration (facultatif)</label>
+        <div class="zone-upload">
+          <input type="file" id="art-image" accept="image/*">
+          <img class="apercu-image" id="apercu-art-image" alt="Aperçu">
+          <div class="upload-statut" id="statut-art-image"></div>
+        </div>
         <button class="bouton-or" id="btn-publier">Publier l'article</button>
         </div>
       </details>
@@ -575,6 +609,12 @@
 
       <div class="mantra-jour" id="mantra-jour"></div>
       <button class="bouton-or bouton-ligne" id="btn-autre-mantra" style="margin-top:12px">Un autre mantra ✦</button>
+
+      <div class="separateur-titre">✦ Intention du Jour ✦</div>
+      <div class="rituel" id="intention-du-jour"></div>
+
+      <button class="bouton-or" id="btn-activer-notifs" style="margin-top:18px">🔔 Recevoir l'affirmation du jour</button>
+      <p class="upload-statut" id="statut-notifs" style="text-align:center"></p>
 
       <div class="rituel">
         <h3>Le rituel d'activation</h3>
@@ -624,6 +664,24 @@
 </div>
 
 <script>
+/* ============ DIAGNOSTIC VISIBLE — DOIT ÊTRE EN TOUT PREMIER ============ */
+function afficherBandeauErreur(msg){
+  let b = document.getElementById('bandeau-erreur-diag');
+  if(!b){
+    b = document.createElement('div');
+    b.id = 'bandeau-erreur-diag';
+    b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#B5483A;color:#fff;padding:12px 16px;font-family:sans-serif;font-size:13px;line-height:1.4;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.3)';
+    document.body.prepend(b);
+  }
+  b.textContent = '⚠️ Erreur technique (envoie ce message à Claude) : ' + msg;
+}
+window.addEventListener('error', (e)=>{ afficherBandeauErreur((e.message||'erreur inconnue') + ' (ligne ' + e.lineno + ')'); });
+window.addEventListener('unhandledrejection', (e)=>{ afficherBandeauErreur('Promesse rejetée : ' + (e.reason && e.reason.message ? e.reason.message : JSON.stringify(e.reason))); });
+
+if(typeof window.supabase === 'undefined'){
+  afficherBandeauErreur("La bibliothèque Supabase ne s'est pas chargée. Vérifie ta connexion internet, désactive un éventuel bloqueur de publicités (AdBlock, uBlock, Brave Shields…) pour ce site, puis recharge la page.");
+}
+
 /* ============ RÉGLAGES ============ */
 /* ⬇️ Remplace par ton vrai lien "Dis-moi quel parfum tu portes" (Shopify) */
 const LIEN_DIS_MOI = "https://tanikaparfums.fr";
@@ -632,7 +690,16 @@ const LIEN_SITE = "https://tanikaparfums.fr";
 /* ⬇️⬇️⬇️ COLLE ICI TES CLÉS SUPABASE, Project Settings → API dans ton tableau de bord Supabase */
 const SUPABASE_URL = "https://ppbvxiajdahqautlfyqx.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwYnZ4aWFqZGFocWF1dGxmeXF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NDUyMDUsImV4cCI6MjA5ODUyMTIwNX0.UkjVEkB6ovIqK4B4JikXbt0-3cgfLGiweEQGgUXQwqo";
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* Clé publique VAPID, nécessaire pour les notifications — déjà générée, ne pas y toucher */
+const VAPID_PUBLIC_KEY = "BCrMg60eI_2Vu3kdgESmfwXt-nY8bjFVvSAiqZ4wTtD6zACwpmDIm79qlauhdStCtT8K5Gg3iZr7bQqo5fO-UFs";
+
+let supabaseClient;
+try{
+  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}catch(e){
+  afficherBandeauErreur("Impossible de créer le client Supabase : " + e.message);
+}
 
 const CHAKRAS = [
   {nom:"Racine", hex:"#B5483A"}, {nom:"Sacré", hex:"#D97A2B"}, {nom:"Plexus solaire", hex:"#D9B428"},
@@ -640,20 +707,38 @@ const CHAKRAS = [
 ];
 
 const INTENTIONS = [
-  {cle:"amour", label:"Attirer l'amour", chakras:[3]},
-  {cle:"confiance", label:"Gagner en confiance", chakras:[2]},
-  {cle:"abondance", label:"Attirer l'abondance", chakras:[0,1]},
-  {cle:"clarte", label:"Clarté mentale", chakras:[5,6]},
-  {cle:"creativite", label:"Stimuler ma créativité", chakras:[1]},
-  {cle:"ancrage", label:"Ancrage & stabilité", chakras:[0]},
-  {cle:"expression", label:"Affirmer ma parole", chakras:[4]},
-  {cle:"repos", label:"Repos & apaisement", chakras:[3,6]}
+  {cle:"amour", label:"Attirer l'amour", chakras:[3], notes:"Rose de Damas, Ylang-Ylang, Fleur d'Oranger"},
+  {cle:"confiance", label:"Gagner en confiance", chakras:[2], notes:"Bergamote, Néroli, Agrumes solaires"},
+  {cle:"abondance", label:"Attirer l'abondance", chakras:[0,1], notes:"Patchouli, Vétiver, Ambre"},
+  {cle:"clarte", label:"Clarté mentale", chakras:[5,6], notes:"Encens Oliban, Menthe, Eucalyptus"},
+  {cle:"creativite", label:"Stimuler ma créativité", chakras:[1], notes:"Jasmin, Ylang-Ylang, Épices douces"},
+  {cle:"ancrage", label:"Ancrage & stabilité", chakras:[0], notes:"Santal, Cèdre de l'Atlas, Vétiver"},
+  {cle:"expression", label:"Affirmer ma parole", chakras:[4], notes:"Lavande Vraie, Eucalyptus Radié, Menthe"},
+  {cle:"repos", label:"Repos & apaisement", chakras:[3,6], notes:"Lavande, Camomille, Fleur d'Oranger"},
+  {cle:"protection", label:"Protection énergétique", chakras:[0], notes:"Encens, Myrrhe, Bois de Santal"},
+  {cle:"guerison", label:"Guérison intérieure", chakras:[3], notes:"Rose, Camomille, Néroli"},
+  {cle:"pardon", label:"Pardon et libération", chakras:[3], notes:"Fleur d'Oranger, Rose, Encens léger"},
+  {cle:"lacherprise", label:"Lâcher-prise", chakras:[6], notes:"Myrrhe, Lavande, Bois précieux"},
+  {cle:"sommeil", label:"Sommeil réparateur", chakras:[5], notes:"Lavande Vraie, Camomille, Vanille douce"},
+  {cle:"seduction", label:"Séduction assumée", chakras:[1], notes:"Jasmin Sambac, Ylang-Ylang, Musc"},
+  {cle:"chance", label:"Attirer la chance", chakras:[0,2], notes:"Bergamote, Cannelle, Agrumes"},
+  {cle:"spiritualite", label:"Connexion spirituelle", chakras:[6], notes:"Encens Oliban, Myrrhe, Oud"},
+  {cle:"courage", label:"Puiser du courage", chakras:[2], notes:"Poivre rose, Bergamote, Bois fumés"},
+  {cle:"gratitude", label:"Cultiver la gratitude", chakras:[3], notes:"Rose, Fleur d'Oranger, Vanille"},
+  {cle:"intuition", label:"Affiner mon intuition", chakras:[5], notes:"Encens, Iris, Bois de Santal"},
+  {cle:"purification", label:"Purifier mon énergie", chakras:[0,4], notes:"Eucalyptus, Sauge blanche, Agrumes"}
 ];
 
 const ETATS = [
   {cle:"fatiguee", label:"Fatiguée"}, {cle:"stressee", label:"Stressée"},
   {cle:"douce", label:"Douce"}, {cle:"joyeuse", label:"Joyeuse"},
-  {cle:"confiante", label:"Confiante"}, {cle:"neutre", label:"Neutre"}
+  {cle:"confiante", label:"Confiante"}, {cle:"neutre", label:"Neutre"},
+  {cle:"anxieuse", label:"Anxieuse"}, {cle:"triste", label:"Triste"},
+  {cle:"epuisee", label:"Épuisée"}, {cle:"sereine", label:"Sereine"},
+  {cle:"energique", label:"Énergique"}, {cle:"vulnerable", label:"Vulnérable"},
+  {cle:"reconnaissante", label:"Reconnaissante"}, {cle:"amoureuse", label:"Amoureuse"},
+  {cle:"encolere", label:"En colère"}, {cle:"inspiree", label:"Inspirée"},
+  {cle:"melancolique", label:"Mélancolique"}, {cle:"determinee", label:"Déterminée"}
 ];
 
 const MOMENTS = [
@@ -692,14 +777,32 @@ const REPERTOIRE_BASE = [
 ];
 
 const MANTRAS = [
-  {theme:"Ancrage", txt:"« Je pose mes racines. Ce parfum scelle ma présence à la terre. »"},
-  {theme:"Cœur", txt:"« Mon cœur s'ouvre. Ce parfum est le sceau de mon amour pour moi. »"},
-  {theme:"Confiance", txt:"« Je rayonne sans permission. Ce parfum réveille mon soleil intérieur. »"},
-  {theme:"Parole", txt:"« Ma voix est juste. Ce parfum libère ce que je tais. »"},
-  {theme:"Intuition", txt:"« Je sais avant de comprendre. Ce parfum ouvre mon regard intérieur. »"},
-  {theme:"Créativité", txt:"« Je crée par plaisir. Ce parfum réveille mon élan créateur. »"},
-  {theme:"Souveraineté", txt:"« Je n'ai rien à prouver. Ce parfum est ma signature. »"},
-  {theme:"Abondance", txt:"« Je mérite de recevoir. Ce parfum m'ouvre à l'abondance. »"}
+  {cle:"ancrage", theme:"Ancrage", txt:"« Je suis la terre qui ne tremble pas. Rien ni personne ne déplace mon centre. »"},
+  {cle:"ancrage", theme:"Ancrage", txt:"« Mes racines sont profondes. Je grandis droite, sans avoir besoin de bruit. »"},
+  {cle:"amour", theme:"Amour", txt:"« Je suis l'amour que je cherche ailleurs. Il commence ici, en moi, maintenant. »"},
+  {cle:"amour", theme:"Amour", txt:"« Mon cœur s'ouvre en toute sécurité. J'aime et je suis aimée en juste mesure. »"},
+  {cle:"confiance", theme:"Confiance", txt:"« Je rayonne sans permission. Mon soleil intérieur ne demande la validation de personne. »"},
+  {cle:"confiance", theme:"Confiance", txt:"« Je marche dans ma puissance. Ma seule présence change la fréquence d'une pièce. »"},
+  {cle:"expression", theme:"Parole", txt:"« Ma voix est une arme sacrée. Je dis ma vérité sans trembler, sans m'excuser. »"},
+  {cle:"expression", theme:"Parole", txt:"« Ce que je tais depuis trop longtemps se libère aujourd'hui, avec grâce et fermeté. »"},
+  {cle:"intuition", theme:"Intuition", txt:"« Je sais avant de comprendre. Mon regard intérieur ne se trompe jamais. »"},
+  {cle:"clarte", theme:"Clarté", txt:"« Le brouillard se lève. Ma vision est nette, mes décisions sont justes. »"},
+  {cle:"creativite", theme:"Créativité", txt:"« Je crée par plaisir, jamais par peur. Mon élan créateur est infini. »"},
+  {cle:"seduction", theme:"Séduction", txt:"« Ma sensualité est sacrée. Je l'habite sans honte et sans excuse. »"},
+  {cle:"confiance", theme:"Souveraineté", txt:"« Je n'ai rien à prouver à qui que ce soit. Ma signature, c'est ma présence. »"},
+  {cle:"abondance", theme:"Abondance", txt:"« Je mérite de recevoir sans culpabilité. L'abondance me cherche autant que je la cherche. »"},
+  {cle:"abondance", theme:"Abondance", txt:"« Je suis un aimant à opportunités. Ce qui est pour moi me trouve sans effort. »"},
+  {cle:"protection", theme:"Protection", txt:"« Je suis entourée d'une lumière que rien de négatif ne peut traverser. »"},
+  {cle:"guerison", theme:"Guérison", txt:"« Je me libère de ce qui ne m'appartient plus. Chaque respiration me guérit un peu plus. »"},
+  {cle:"pardon", theme:"Pardon", txt:"« Je pardonne pour me libérer, pas pour excuser. Ce poids n'est plus le mien à porter. »"},
+  {cle:"lacherprise", theme:"Lâcher-prise", txt:"« Je relâche ce que je ne contrôle pas. Ce qui doit rester, reste ; le reste s'en va. »"},
+  {cle:"sommeil", theme:"Sommeil", txt:"« Mon corps se dépose. Cette nuit m'appartient, et elle me répare entièrement. »"},
+  {cle:"chance", theme:"Chance", txt:"« Je suis alignée avec la bonne fortune. Les portes s'ouvrent au bon moment pour moi. »"},
+  {cle:"spiritualite", theme:"Élévation", txt:"« Je m'élève. Le sacré circule en moi et éclaire chacun de mes pas. »"},
+  {cle:"courage", theme:"Courage", txt:"« La peur est présente, et j'avance quand même. Mon courage est plus grand qu'elle. »"},
+  {cle:"gratitude", theme:"Gratitude", txt:"« Je vois déjà tout ce qui va bien. Ma gratitude ouvre la porte à davantage encore. »"},
+  {cle:"purification", theme:"Purification", txt:"« Je nettoie mon champ. Ce qui n'est plus aligné avec moi n'a plus sa place ici. »"},
+  {cle:"repos", theme:"Repos", txt:"« Je m'autorise à ne rien faire. Me reposer n'est pas un luxe, c'est un besoin sacré. »"}
 ];
 
 const $ = s => document.querySelector(s);
@@ -733,7 +836,7 @@ async function chargerDonneesPubliques(){
   }catch(e){ console.error('Chargement répertoire impossible', e); }
   try{
     const {data} = await supabaseClient.from('articles').select('*').order('created_at',{ascending:false});
-    if(data) articles = data.map(a=>({titre:a.titre, categorie:a.categorie, texte:a.texte, date:a.created_at, id:a.id}));
+    if(data) articles = data.map(a=>({titre:a.titre, categorie:a.categorie, texte:a.texte, date:a.created_at, id:a.id, image_url:a.image_url}));
   }catch(e){ console.error('Chargement articles impossible', e); }
   afficherClasseur(); afficherArticles();
 }
@@ -764,16 +867,19 @@ function mettreAJourEspacesCreatrice(){
 }
 
 async function verifierSession(){
+  if(!supabaseClient) return;
   const {data:{session}} = await supabaseClient.auth.getSession();
   sessionActuelle = session;
   afficherEtatConnexion();
   await chargerDonneesPersonnelles();
 }
-supabaseClient.auth.onAuthStateChange((event, session)=>{
-  sessionActuelle = session;
-  afficherEtatConnexion();
-  chargerDonneesPersonnelles();
-});
+if(supabaseClient){
+  supabaseClient.auth.onAuthStateChange((event, session)=>{
+    sessionActuelle = session;
+    afficherEtatConnexion();
+    chargerDonneesPersonnelles();
+  });
+}
 
 function repertoire(){ return [...ajouts, ...REPERTOIRE_BASE]; }
 
@@ -821,7 +927,6 @@ function vibe(bovis){
 }
 
 /* ============ SCANNER ============ */
-let flux=null, detecteur=null, boucle=null;
 
 function afficherVerdict(p){
   const v=vibe(p.bovis), ch=CHAKRAS[p.chakra]||CHAKRAS[3];
@@ -846,11 +951,16 @@ function afficherVerdict(p){
     ? `<div class="v-oracle"><div class="et-oracle">Carte Oracle</div><div class="txt-oracle">${p.oracle}</div></div>`
     : '';
 
+  const blocImage = p.image_url
+    ? `<img class="v-image" src="${p.image_url}" alt="${p.nom}">`
+    : '';
+
   $('#verdict').innerHTML=`
     <div class="v-carte v-${v.cls}">
       <div class="v-badge">${v.badge}</div>
       <div class="v-nom">${p.nom}</div>
       <div class="v-marque">${p.marque||''}</div>
+      ${blocImage}
       <div class="v-bovis">${Number(p.bovis).toLocaleString('fr-FR')}<span class="v-unite"> U.B.</span></div>
       <div class="v-pastille"><i style="background:${ch.hex}"></i>Résonne au chakra ${ch.nom}</div>
       ${p.famille?`<div class="v-notes">${p.famille}</div>`:''}
@@ -892,44 +1002,56 @@ function montrerNonTrouve(terme){
 $('#btn-chercher').addEventListener('click',()=>chercherParNom($('#scan-nom').value));
 $('#scan-nom').addEventListener('keydown',e=>{if(e.key==='Enter')chercherParNom(e.target.value);});
 
+let flux=null, lecteurZXing=null;
+
 async function demarrerCamera(){
+  if(typeof ZXing === 'undefined'){
+    montrerNonTrouve("scanner indisponible");
+    $('#non-trouve').innerHTML="Le lecteur de code-barres n'a pas pu se charger (connexion internet ?). Utilise la recherche par nom en attendant. ✦";
+    $('#non-trouve').classList.add('visible');
+    return;
+  }
   if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-    montrerNonTrouve("caméra indisponible ici"); 
-    $('#non-trouve').innerHTML="La caméra n'est pas accessible dans cet aperçu. Une fois l'app installée sur ton téléphone, le scan du code-barres fonctionnera. En attendant, utilise la recherche par nom. ✦";
+    montrerNonTrouve("caméra indisponible ici");
+    $('#non-trouve').innerHTML="La caméra n'est pas accessible ici. Utilise la recherche par nom en attendant. ✦";
     $('#non-trouve').classList.add('visible');
     return;
   }
   try{
-    flux = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
-    const video=$('#video'); video.srcObject=flux; await video.play();
     $('#video-zone').classList.add('actif'); $('#scan-accueil').style.display='none';
     $('#btn-camera').textContent='Arrêter la caméra';
-    if('BarcodeDetector' in window){
-      detecteur = new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e']});
-      scannerBoucle();
-    }
+
+    const hints = new Map();
+    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+      ZXing.BarcodeFormat.EAN_13, ZXing.BarcodeFormat.EAN_8,
+      ZXing.BarcodeFormat.UPC_A, ZXing.BarcodeFormat.UPC_E
+    ]);
+    lecteurZXing = new ZXing.BrowserMultiFormatReader(hints);
+
+    await lecteurZXing.decodeFromConstraints(
+      { video: { facingMode: 'environment' } },
+      'video',
+      (result, err) => {
+        if(result){
+          const code = result.getText();
+          if(chercherParCode(code)){ arreterCamera(); }
+          else{ arreterCamera(); montrerNonTrouve("code "+code); }
+        }
+      }
+    );
+    flux = true;
   }catch(e){
+    console.error('Erreur caméra', e);
+    arreterCamera();
     montrerNonTrouve("accès caméra refusé");
-    $('#non-trouve').innerHTML="L'accès à la caméra a été refusé. Autorise-le dans les réglages, ou utilise la recherche par nom. ✦";
+    $('#non-trouve').innerHTML="L'accès à la caméra a été refusé ou est impossible. Autorise-le dans les réglages de ton navigateur, ou utilise la recherche par nom. ✦";
     $('#non-trouve').classList.add('visible');
   }
 }
-async function scannerBoucle(){
-  if(!detecteur || !flux) return;
-  try{
-    const codes = await detecteur.detect($('#video'));
-    if(codes.length){
-      const code = codes[0].rawValue;
-      if(chercherParCode(code)){ arreterCamera(); return; }
-      else{ arreterCamera(); montrerNonTrouve("code "+code); return; }
-    }
-  }catch(e){}
-  boucle = requestAnimationFrame(scannerBoucle);
-}
 function arreterCamera(){
-  if(boucle) cancelAnimationFrame(boucle);
-  if(flux){ flux.getTracks().forEach(t=>t.stop()); flux=null; }
-  $('#video-zone').classList.remove('actif'); 
+  if(lecteurZXing){ try{ lecteurZXing.reset(); }catch(e){} lecteurZXing=null; }
+  flux=null;
+  $('#video-zone').classList.remove('actif');
   const sa=$('#scan-accueil'); if(sa) sa.style.display='block';
   const bc=$('#btn-camera'); if(bc) bc.textContent='Activer la caméra';
 }
@@ -949,6 +1071,7 @@ function afficherClasseur(filtre=''){
     const v=vibe(p.bovis), ch=CHAKRAS[p.chakra]||CHAKRAS[3];
     return `<div class="parfum" data-i="${i}">
       <div class="p-tete">
+        ${p.image_url?`<img class="p-image" src="${p.image_url}" alt="${p.nom}">`:''}
         <div><div class="p-nom">${p.nom}</div><div class="p-marque">${p.marque||''}</div></div>
         <div class="p-bovis"><b>${Number(p.bovis).toLocaleString('fr-FR')}</b>
           <span class="p-mini-badge ${badgeClasse(v)}">${v.label}</span></div>
@@ -963,6 +1086,42 @@ function afficherClasseur(filtre=''){
   zone.querySelectorAll('.parfum').forEach(el=>el.addEventListener('click',()=>el.classList.toggle('ouvert')));
 }
 $('#filtre').addEventListener('input',e=>afficherClasseur(e.target.value));
+
+/* ============ UPLOAD D'IMAGES ============ */
+let fichierAImage=null, fichierArtImage=null;
+
+function brancherApercu(inputId, apercuId, onFichier){
+  $('#'+inputId).addEventListener('change',(e)=>{
+    const fichier = e.target.files[0];
+    if(!fichier) return;
+    onFichier(fichier);
+    const lecteur = new FileReader();
+    lecteur.onload = ()=>{ $('#'+apercuId).src = lecteur.result; $('#'+apercuId).classList.add('visible'); };
+    lecteur.readAsDataURL(fichier);
+  });
+}
+brancherApercu('a-image','apercu-a-image', f=>fichierAImage=f);
+brancherApercu('art-image','apercu-art-image', f=>fichierArtImage=f);
+
+async function televerserImage(fichier, dossier, statutId){
+  if(!fichier) return '';
+  if(fichier.size > 5*1024*1024){
+    if(statutId) $('#'+statutId).textContent = 'Image trop lourde (5 Mo max).';
+    return '';
+  }
+  const extension = fichier.name.split('.').pop();
+  const chemin = `${dossier}/${Date.now()}-${Math.round(Math.random()*1e6)}.${extension}`;
+  if(statutId) $('#'+statutId).textContent = 'Envoi de l\'image…';
+  const {error} = await supabaseClient.storage.from('images').upload(chemin, fichier);
+  if(error){
+    console.error('Upload impossible', error);
+    if(statutId) $('#'+statutId).textContent = "Erreur lors de l'envoi de l'image.";
+    return '';
+  }
+  const {data} = supabaseClient.storage.from('images').getPublicUrl(chemin);
+  if(statutId) $('#'+statutId).textContent = '✦ Image envoyée ✦';
+  return data.publicUrl;
+}
 
 /* Chips multi-sélection pour le formulaire d'ajout */
 let aIntentionsChoisies=[], aMomentsChoisis=[];
@@ -982,18 +1141,21 @@ $('#btn-ajouter').addEventListener('click',async()=>{
   if(!nom){ $('#a-nom').focus(); return; }
   if(!bovis){ $('#a-bovis').focus(); return; }
   if(!sessionActuelle || !estAdmin){ return; }
+  $('#btn-ajouter').textContent='Envoi…';
+  const image_url = await televerserImage(fichierAImage, 'parfums', 'statut-a-image');
   const {error} = await supabaseClient.from('parfums').insert({
     nom, marque:$('#a-marque').value.trim(), code:$('#a-code').value.trim(),
     bovis, famille:$('#a-famille').value.trim(),
     chakra:Number($('#a-chakra').value), pourquoi:$('#a-pourquoi').value.trim(),
     intentions:[...aIntentionsChoisies], moments:[...aMomentsChoisis],
-    oracle:$('#a-oracle').value.trim(), created_by:sessionActuelle.user.id
+    oracle:$('#a-oracle').value.trim(), image_url, created_by:sessionActuelle.user.id
   });
   if(error){ console.error(error); $('#btn-ajouter').textContent="Erreur, réessaie"; setTimeout(()=>$('#btn-ajouter').textContent='Ajouter au répertoire',2000); return; }
   ['a-nom','a-marque','a-code','a-bovis','a-famille','a-pourquoi','a-oracle'].forEach(id=>$('#'+id).value='');
   $('#a-intentions').querySelectorAll('.chip').forEach(c=>c.classList.remove('choisi'));
   $('#a-moments').querySelectorAll('.chip').forEach(c=>c.classList.remove('choisi'));
   aIntentionsChoisies=[]; aMomentsChoisis=[];
+  fichierAImage=null; $('#a-image').value=''; $('#apercu-a-image').classList.remove('visible'); $('#statut-a-image').textContent='';
   await chargerDonneesPubliques();
   $('#btn-ajouter').textContent='✦ Ajouté ✦';
   setTimeout(()=>$('#btn-ajouter').textContent='Ajouter au répertoire',1500);
@@ -1015,24 +1177,35 @@ function afficherEtatConnexion(){
 $('#onglet-connexion').addEventListener('click',()=>{
   $('#onglet-connexion').classList.add('actif'); $('#onglet-inscription').classList.remove('actif');
   $('#form-connexion').style.display='block'; $('#form-inscription').style.display='none';
-  $('#auth-erreur').classList.remove('visible');
+  $('#auth-erreur').classList.remove('visible'); $('#auth-succes').classList.remove('visible');
 });
 $('#onglet-inscription').addEventListener('click',()=>{
   $('#onglet-inscription').classList.add('actif'); $('#onglet-connexion').classList.remove('actif');
   $('#form-inscription').style.display='block'; $('#form-connexion').style.display='none';
-  $('#auth-erreur').classList.remove('visible');
+  $('#auth-erreur').classList.remove('visible'); $('#auth-succes').classList.remove('visible');
 });
 
 function afficherErreurAuth(msg){
+  $('#auth-succes').classList.remove('visible');
   $('#auth-erreur').textContent = msg;
   $('#auth-erreur').classList.add('visible');
+}
+function afficherSuccesAuth(msg){
+  $('#auth-erreur').classList.remove('visible');
+  $('#auth-succes').textContent = msg;
+  $('#auth-succes').classList.add('visible');
 }
 
 $('#btn-connexion').addEventListener('click',async()=>{
   const email=$('#conn-email').value.trim(), motdepasse=$('#conn-motdepasse').value;
   if(!email || !motdepasse){ afficherErreurAuth('Entre ton email et ton mot de passe.'); return; }
+  $('#btn-connexion').textContent='Connexion…';
   const {error} = await supabaseClient.auth.signInWithPassword({email, password:motdepasse});
-  if(error){ afficherErreurAuth('Email ou mot de passe incorrect.'); return; }
+  $('#btn-connexion').textContent='Se connecter';
+  if(error){
+    afficherErreurAuth(error.message.includes('Invalid') ? 'Email ou mot de passe incorrect, ou compte pas encore confirmé.' : 'Email ou mot de passe incorrect.');
+    return;
+  }
   $('#auth-erreur').classList.remove('visible');
 });
 
@@ -1041,12 +1214,19 @@ $('#btn-inscription').addEventListener('click',async()=>{
   if(!prenom){ afficherErreurAuth('Dis-nous ton prénom.'); return; }
   if(!email){ afficherErreurAuth('Entre ton email.'); return; }
   if(motdepasse.length<6){ afficherErreurAuth('Le mot de passe doit faire au moins 6 caractères.'); return; }
-  const {error} = await supabaseClient.auth.signUp({
+  $('#btn-inscription').textContent='Création…';
+  const {data, error} = await supabaseClient.auth.signUp({
     email, password:motdepasse,
     options:{ data:{ prenom } }
   });
-  if(error){ afficherErreurAuth(error.message.includes('already') ? 'Un compte existe déjà avec cet email.' : "Erreur à l'inscription. Réessaie."); return; }
-  $('#auth-erreur').classList.remove('visible');
+  $('#btn-inscription').textContent='Créer mon compte';
+  if(error){ afficherErreurAuth(error.message.includes('already') ? 'Un compte existe déjà avec cet email.' : "Erreur à l'inscription : " + error.message); return; }
+
+  if(data && data.session){
+    afficherSuccesAuth('✦ Compte créé et connecté ✦');
+  } else {
+    afficherSuccesAuth('✦ Compte créé ! Vérifie ta boîte mail (et les spams) pour confirmer ton adresse avant de te connecter. ✦');
+  }
 });
 
 $('#btn-deconnexion').addEventListener('click',async()=>{
@@ -1169,6 +1349,7 @@ function afficherArticles(){
         </div>
         ${estAdmin?`<button class="suppr-art" data-i="${i}" aria-label="Supprimer l'article">✕</button>`:''}
       </div>
+      ${a.image_url?`<img class="art-image" src="${a.image_url}" alt="${a.titre}">`:''}
       <div class="art-corps"><div class="art-texte">${a.texte}</div></div>
     </div>`;
   }).join('');
@@ -1192,11 +1373,14 @@ $('#btn-publier').addEventListener('click',async()=>{
   if(!titre){ $('#art-titre').focus(); return; }
   if(!texte){ $('#art-texte').focus(); return; }
   if(!sessionActuelle || !estAdmin) return;
+  $('#btn-publier').textContent='Envoi…';
+  const image_url = await televerserImage(fichierArtImage, 'articles', 'statut-art-image');
   const {error} = await supabaseClient.from('articles').insert({
-    titre, categorie:$('#art-cat').value, texte, created_by:sessionActuelle.user.id
+    titre, categorie:$('#art-cat').value, texte, image_url, created_by:sessionActuelle.user.id
   });
-  if(error){ console.error('Publication impossible', error); return; }
+  if(error){ console.error('Publication impossible', error); $('#btn-publier').textContent="Erreur, réessaie"; setTimeout(()=>$('#btn-publier').textContent="Publier l'article",2000); return; }
   $('#art-titre').value=''; $('#art-texte').value='';
+  fichierArtImage=null; $('#art-image').value=''; $('#apercu-art-image').classList.remove('visible'); $('#statut-art-image').textContent='';
   await chargerDonneesPubliques();
   $('#btn-publier').textContent='✦ Publié ✦';
   setTimeout(()=>$('#btn-publier').textContent="Publier l'article",1500);
@@ -1210,6 +1394,90 @@ function mantraAleatoire(){
 $('#btn-autre-mantra').addEventListener('click',mantraAleatoire);
 mantraAleatoire();
 $('#m-liste').innerHTML = MANTRAS.map(m=>`<div class="m-carte"><div class="theme">${m.theme}</div><div class="txt">${m.txt}</div></div>`).join('');
+
+/* Intention du jour : identique pour tout le monde le même jour, change chaque jour */
+function afficherIntentionDuJour(){
+  const jourDeLAnnee = Math.floor((Date.now() - new Date(new Date().getFullYear(),0,0)) / 86400000);
+  const intention = INTENTIONS[jourDeLAnnee % INTENTIONS.length];
+  const mantrasCorrespondants = MANTRAS.filter(m=>m.cle === intention.cle);
+  const mantra = mantrasCorrespondants.length
+    ? mantrasCorrespondants[jourDeLAnnee % mantrasCorrespondants.length]
+    : MANTRAS[jourDeLAnnee % MANTRAS.length];
+  $('#intention-du-jour').innerHTML = `
+    <div class="idj-label">✦ ${intention.label} ✦</div>
+    <div class="idj-notes"><b>Notes recommandées aujourd'hui</b>${intention.notes}</div>
+    <div class="idj-mantra">${mantra.txt}</div>`;
+}
+afficherIntentionDuJour();
+
+/* ============ NOTIFICATIONS PUSH ============ */
+function urlBase64ToUint8Array(base64String){
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const brut = window.atob(base64);
+  return Uint8Array.from([...brut].map(c => c.charCodeAt(0)));
+}
+
+let enregistrementSW = null;
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/sw.js')
+    .then(reg => { enregistrementSW = reg; })
+    .catch(e => console.error('Service worker impossible', e));
+}
+
+async function activerNotifications(){
+  const bouton = $('#btn-activer-notifs');
+  const statut = $('#statut-notifs');
+
+  if(!sessionActuelle){
+    statut.textContent = 'Connecte-toi dans l\'onglet Espace pour activer les notifications.';
+    return;
+  }
+  if(!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)){
+    statut.textContent = "Les notifications ne sont pas prises en charge ici. Sur iPhone : ajoute d'abord l'app à l'écran d'accueil (bouton Partager → Sur l'écran d'accueil), puis réessaie depuis l'app ouverte ainsi.";
+    return;
+  }
+
+  bouton.textContent = 'Activation…';
+  try{
+    const permission = await Notification.requestPermission();
+    if(permission !== 'granted'){
+      statut.textContent = 'Notifications refusées. Tu peux les autoriser plus tard dans les réglages de ton navigateur.';
+      bouton.textContent = "🔔 Recevoir l'affirmation du jour";
+      return;
+    }
+
+    if(!enregistrementSW){
+      enregistrementSW = await navigator.serviceWorker.ready;
+    }
+
+    let abonnement = await enregistrementSW.pushManager.getSubscription();
+    if(!abonnement){
+      abonnement = await enregistrementSW.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
+    }
+
+    const json = abonnement.toJSON();
+    const {error} = await supabaseClient.from('push_subscriptions').upsert({
+      user_id: sessionActuelle.user.id,
+      endpoint: json.endpoint,
+      p256dh: json.keys.p256dh,
+      auth: json.keys.auth
+    }, { onConflict: 'endpoint' });
+
+    if(error){ throw error; }
+
+    statut.textContent = '✦ Notifications activées ! Tu recevras ton affirmation chaque jour. ✦';
+    bouton.textContent = '✦ Activé ✦';
+  }catch(e){
+    console.error('Activation notifications impossible', e);
+    statut.textContent = "Impossible d'activer les notifications pour l'instant : " + e.message;
+    bouton.textContent = "🔔 Recevoir l'affirmation du jour";
+  }
+}
+$('#btn-activer-notifs').addEventListener('click', activerNotifications);
 
 /* ============ CHATBOT GUIDE TANIKA ============ */
 const SYSTEME_CHAT = `Tu es le Guide Tanika, l'assistant conversationnel de Tanika Parfums, une maison de parfumerie énergétique fondée par Nossane, Prêtresse Alchimiste et pionnière de la parfumerie vibratoire.
@@ -1311,8 +1579,8 @@ $('#chat-envoyer').addEventListener('click',()=>envoyerMessageChat($('#chat-inpu
 $('#chat-input').addEventListener('keydown',e=>{ if(e.key==='Enter') envoyerMessageChat($('#chat-input').value); });
 
 /* ============ INIT ============ */
-chargerDonneesPubliques();
-verifierSession();
+chargerDonneesPubliques().catch(e=>afficherBandeauErreur('chargerDonneesPubliques : '+e.message));
+verifierSession().catch(e=>afficherBandeauErreur('verifierSession : '+e.message));
 </script>
 </body>
 </html>
