@@ -191,6 +191,12 @@
   .parfum.ouvert .p-detail{max-height:300px;margin-top:10px}
   .p-detail .l{font-size:15.5px;margin-top:5px;line-height:1.4}
   .p-detail .l b{color:var(--brun)}
+  .p-actions-admin{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--or-pale)}
+  .p-btn-modifier,.p-btn-supprimer,.art-btn-modifier{flex:1;border:1px solid var(--or-pale);background:#FFFDF7;border-radius:10px;padding:9px;font-family:'Cormorant Garamond',serif;font-size:14.5px;color:var(--brun);cursor:pointer}
+  .p-btn-supprimer{color:var(--terre);border-color:rgba(181,72,58,.35)}
+  .bandeau-edition{background:var(--royal);color:var(--or-clair);text-align:center;padding:10px 14px;border-radius:12px;font-size:14.5px;font-style:italic;margin-bottom:14px;display:none}
+  .bandeau-edition.visible{display:block}
+  .lien-annuler-edition{display:block;text-align:center;margin-top:10px;background:none;border:none;color:var(--brun);font-style:italic;text-decoration:underline;cursor:pointer;font-family:'Cormorant Garamond',serif;font-size:14px}
   .vide{text-align:center;font-style:italic;color:var(--brun);padding:26px 12px;line-height:1.5}
 
   /* Espace créatrice */
@@ -457,6 +463,7 @@
 
         <div class="zone-creatrice" id="zone-classeur">
         <p class="note-part">Tes ajouts rejoignent le répertoire visible par tes clientes.</p>
+        <div class="bandeau-edition" id="bandeau-edition-parfum">✦ Tu modifies un parfum existant ✦</div>
 
         <label for="a-nom">Nom du parfum</label>
         <input type="text" id="a-nom" placeholder="Ex. : Paradoxe">
@@ -493,6 +500,7 @@
         <label for="a-oracle">Message oracle (carte d'inspiration)</label>
         <textarea id="a-oracle" placeholder="Une phrase inspirante associée à ce parfum…"></textarea>
         <button class="bouton-or" id="btn-ajouter">Ajouter au répertoire</button>
+        <button type="button" class="lien-annuler-edition" id="btn-annuler-edition-parfum" style="display:none">Annuler la modification</button>
         </div>
       </details>
 
@@ -578,6 +586,7 @@
 
         <div class="zone-creatrice" id="zone-articles">
         <p class="note-part">Ton article rejoint la bibliothèque visible par tes clientes.</p>
+        <div class="bandeau-edition" id="bandeau-edition-article">✦ Tu modifies un article existant ✦</div>
         <label for="art-titre">Titre de l'article</label>
         <input type="text" id="art-titre" placeholder="Ex. : Pourquoi le Santal apaise le mental">
         <label for="art-cat">Catégorie</label>
@@ -589,13 +598,14 @@
         </select>
         <label for="art-texte">Contenu</label>
         <textarea id="art-texte" style="min-height:160px" placeholder="Écris ton article ici…"></textarea>
-        <label for="art-image">Image d'illustration (facultatif)</label>
+        <label for="art-image">Image d'illustration (facultatif — laisse vide pour garder l'image actuelle)</label>
         <div class="zone-upload">
           <input type="file" id="art-image" accept="image/*">
           <img class="apercu-image" id="apercu-art-image" alt="Aperçu">
           <div class="upload-statut" id="statut-art-image"></div>
         </div>
         <button class="bouton-or" id="btn-publier">Publier l'article</button>
+        <button type="button" class="lien-annuler-edition" id="btn-annuler-edition-article" style="display:none">Annuler la modification</button>
         </div>
       </details>
 
@@ -864,6 +874,7 @@ function mettreAJourEspacesCreatrice(){
   document.querySelectorAll('.zone-creatrice').forEach(z=>z.classList.toggle('visible', estAdmin));
   document.querySelectorAll('.badge-verrouille').forEach(b=>b.textContent = estAdmin ? '🔓' : '🔒');
   afficherArticles(); // pour afficher/masquer les boutons supprimer
+  afficherClasseur($('#filtre') ? $('#filtre').value : ''); // pour afficher/masquer les boutons modifier/supprimer
 }
 
 async function verifierSession(){
@@ -1069,6 +1080,11 @@ function afficherClasseur(filtre=''){
   if(!liste.length){ zone.innerHTML='<p class="vide">Aucun parfum ne correspond. ✦</p>'; return; }
   zone.innerHTML = liste.map((p,i)=>{
     const v=vibe(p.bovis), ch=CHAKRAS[p.chakra]||CHAKRAS[3];
+    const actionsAdmin = (estAdmin && p.id) ? `
+      <div class="p-actions-admin">
+        <button type="button" class="p-btn-modifier" data-i="${i}">✏️ Modifier</button>
+        <button type="button" class="p-btn-supprimer" data-i="${i}">🗑️ Supprimer</button>
+      </div>` : '';
     return `<div class="parfum" data-i="${i}">
       <div class="p-tete">
         ${p.image_url?`<img class="p-image" src="${p.image_url}" alt="${p.nom}">`:''}
@@ -1080,10 +1096,20 @@ function afficherClasseur(filtre=''){
         ${p.famille?`<div class="l"><b>Famille :</b> ${p.famille}</div>`:''}
         <div class="l"><b>Résonance :</b> chakra ${ch.nom}</div>
         ${p.pourquoi?`<div class="l">${p.pourquoi}</div>`:''}
+        ${actionsAdmin}
       </div>
     </div>`;
   }).join('');
-  zone.querySelectorAll('.parfum').forEach(el=>el.addEventListener('click',()=>el.classList.toggle('ouvert')));
+  zone.querySelectorAll('.parfum').forEach(el=>el.addEventListener('click',(ev)=>{
+    if(ev.target.closest('.p-actions-admin')) return;
+    el.classList.toggle('ouvert');
+  }));
+  zone.querySelectorAll('.p-btn-modifier').forEach(b=>{
+    b.addEventListener('click',(ev)=>{ ev.stopPropagation(); editerParfum(liste[Number(b.dataset.i)]); });
+  });
+  zone.querySelectorAll('.p-btn-supprimer').forEach(b=>{
+    b.addEventListener('click',(ev)=>{ ev.stopPropagation(); supprimerParfum(liste[Number(b.dataset.i)]); });
+  });
 }
 $('#filtre').addEventListener('input',e=>afficherClasseur(e.target.value));
 
@@ -1125,6 +1151,7 @@ async function televerserImage(fichier, dossier, statutId){
 
 /* Chips multi-sélection pour le formulaire d'ajout */
 let aIntentionsChoisies=[], aMomentsChoisis=[];
+let parfumEnEdition = null;
 $('#a-intentions').innerHTML = INTENTIONS.map(i=>`<button type="button" class="chip" data-i="${i.cle}">${i.label}</button>`).join('');
 $('#a-moments').innerHTML = MOMENTS.map(m=>`<button type="button" class="chip" data-m="${m.cle}">${m.ico} ${m.label}</button>`).join('');
 $('#a-intentions').querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>{
@@ -1136,28 +1163,84 @@ $('#a-moments').querySelectorAll('.chip').forEach(b=>b.addEventListener('click',
   aMomentsChoisis = [...$('#a-moments').querySelectorAll('.chip.choisi')].map(c=>c.dataset.m);
 }));
 
+function reinitialiserFormulaireParfum(){
+  parfumEnEdition = null;
+  ['a-nom','a-marque','a-code','a-bovis','a-famille','a-pourquoi','a-oracle'].forEach(id=>$('#'+id).value='');
+  $('#a-chakra').value = '3';
+  $('#a-intentions').querySelectorAll('.chip').forEach(c=>c.classList.remove('choisi'));
+  $('#a-moments').querySelectorAll('.chip').forEach(c=>c.classList.remove('choisi'));
+  aIntentionsChoisies=[]; aMomentsChoisis=[];
+  fichierAImage=null; $('#a-image').value=''; $('#apercu-a-image').classList.remove('visible'); $('#statut-a-image').textContent='';
+  $('#bandeau-edition-parfum').classList.remove('visible');
+  $('#btn-annuler-edition-parfum').style.display='none';
+  $('#btn-ajouter').textContent='Ajouter au répertoire';
+}
+
+function editerParfum(p){
+  if(!p.id) return;
+  parfumEnEdition = p.id;
+  $('#a-nom').value = p.nom || '';
+  $('#a-marque').value = p.marque || '';
+  $('#a-code').value = p.code || '';
+  $('#a-bovis').value = p.bovis || '';
+  $('#a-famille').value = p.famille || '';
+  $('#a-chakra').value = String(p.chakra ?? 3);
+  $('#a-pourquoi').value = p.pourquoi || '';
+  $('#a-oracle').value = p.oracle || '';
+  aIntentionsChoisies = [...(p.intentions||[])];
+  aMomentsChoisis = [...(p.moments||[])];
+  $('#a-intentions').querySelectorAll('.chip').forEach(c=>c.classList.toggle('choisi', aIntentionsChoisies.includes(c.dataset.i)));
+  $('#a-moments').querySelectorAll('.chip').forEach(c=>c.classList.toggle('choisi', aMomentsChoisis.includes(c.dataset.m)));
+  fichierAImage=null; $('#a-image').value=''; $('#statut-a-image').textContent='';
+  if(p.image_url){ $('#apercu-a-image').src=p.image_url; $('#apercu-a-image').classList.add('visible'); }
+  else { $('#apercu-a-image').classList.remove('visible'); }
+  $('#bandeau-edition-parfum').classList.add('visible');
+  $('#btn-annuler-edition-parfum').style.display='block';
+  $('#btn-ajouter').textContent='Enregistrer les modifications';
+  document.querySelector('#classeur .creatrice').open = true;
+  $('#classeur .creatrice').scrollIntoView({behavior:'smooth', block:'start'});
+}
+$('#btn-annuler-edition-parfum').addEventListener('click', reinitialiserFormulaireParfum);
+
+async function supprimerParfum(p){
+  if(!p.id) return;
+  if(!confirm(`Supprimer « ${p.nom} » du répertoire ? Cette action est définitive.`)) return;
+  const {error} = await supabaseClient.from('parfums').delete().eq('id', p.id);
+  if(error){ console.error('Suppression impossible', error); return; }
+  if(parfumEnEdition === p.id) reinitialiserFormulaireParfum();
+  await chargerDonneesPubliques();
+}
+
 $('#btn-ajouter').addEventListener('click',async()=>{
   const nom=$('#a-nom').value.trim(), bovis=Number($('#a-bovis').value);
   if(!nom){ $('#a-nom').focus(); return; }
   if(!bovis){ $('#a-bovis').focus(); return; }
   if(!sessionActuelle || !estAdmin){ return; }
+  const texteOriginal = parfumEnEdition ? 'Enregistrer les modifications' : 'Ajouter au répertoire';
   $('#btn-ajouter').textContent='Envoi…';
-  const image_url = await televerserImage(fichierAImage, 'parfums', 'statut-a-image');
-  const {error} = await supabaseClient.from('parfums').insert({
+  let image_url = await televerserImage(fichierAImage, 'parfums', 'statut-a-image');
+  if(!image_url && parfumEnEdition && !fichierAImage){
+    const existant = repertoire().find(p=>p.id===parfumEnEdition);
+    image_url = existant ? (existant.image_url||'') : '';
+  }
+  const donnees = {
     nom, marque:$('#a-marque').value.trim(), code:$('#a-code').value.trim(),
     bovis, famille:$('#a-famille').value.trim(),
     chakra:Number($('#a-chakra').value), pourquoi:$('#a-pourquoi').value.trim(),
     intentions:[...aIntentionsChoisies], moments:[...aMomentsChoisis],
-    oracle:$('#a-oracle').value.trim(), image_url, created_by:sessionActuelle.user.id
-  });
-  if(error){ console.error(error); $('#btn-ajouter').textContent="Erreur, réessaie"; setTimeout(()=>$('#btn-ajouter').textContent='Ajouter au répertoire',2000); return; }
-  ['a-nom','a-marque','a-code','a-bovis','a-famille','a-pourquoi','a-oracle'].forEach(id=>$('#'+id).value='');
-  $('#a-intentions').querySelectorAll('.chip').forEach(c=>c.classList.remove('choisi'));
-  $('#a-moments').querySelectorAll('.chip').forEach(c=>c.classList.remove('choisi'));
-  aIntentionsChoisies=[]; aMomentsChoisis=[];
-  fichierAImage=null; $('#a-image').value=''; $('#apercu-a-image').classList.remove('visible'); $('#statut-a-image').textContent='';
+    oracle:$('#a-oracle').value.trim(), image_url
+  };
+  let error;
+  if(parfumEnEdition){
+    ({error} = await supabaseClient.from('parfums').update(donnees).eq('id', parfumEnEdition));
+  } else {
+    ({error} = await supabaseClient.from('parfums').insert({...donnees, created_by:sessionActuelle.user.id}));
+  }
+  if(error){ console.error(error); $('#btn-ajouter').textContent="Erreur, réessaie"; setTimeout(()=>$('#btn-ajouter').textContent=texteOriginal,2000); return; }
+  const messageSucces = parfumEnEdition ? '✦ Modifié ✦' : '✦ Ajouté ✦';
+  reinitialiserFormulaireParfum();
   await chargerDonneesPubliques();
-  $('#btn-ajouter').textContent='✦ Ajouté ✦';
+  $('#btn-ajouter').textContent=messageSucces;
   setTimeout(()=>$('#btn-ajouter').textContent='Ajouter au répertoire',1500);
 });
 
@@ -1350,12 +1433,15 @@ function afficherArticles(){
         ${estAdmin?`<button class="suppr-art" data-i="${i}" aria-label="Supprimer l'article">✕</button>`:''}
       </div>
       ${a.image_url?`<img class="art-image" src="${a.image_url}" alt="${a.titre}">`:''}
-      <div class="art-corps"><div class="art-texte">${a.texte}</div></div>
+      <div class="art-corps">
+        <div class="art-texte">${a.texte}</div>
+        ${estAdmin?`<button type="button" class="art-btn-modifier" data-i="${i}" style="margin-top:12px">✏️ Modifier cet article</button>`:''}
+      </div>
     </div>`;
   }).join('');
   zone.querySelectorAll('.article').forEach(el=>{
     el.addEventListener('click',(ev)=>{
-      if(ev.target.classList.contains('suppr-art')) return;
+      if(ev.target.classList.contains('suppr-art') || ev.target.classList.contains('art-btn-modifier')) return;
       el.classList.toggle('ouvert');
     });
   });
@@ -1363,26 +1449,70 @@ function afficherArticles(){
     b.addEventListener('click',async(ev)=>{
       ev.stopPropagation();
       const art = articles[Number(b.dataset.i)];
+      if(!confirm(`Supprimer l'article « ${art.titre} » ? Cette action est définitive.`)) return;
       if(art.id) await supabaseClient.from('articles').delete().eq('id',art.id);
       await chargerDonneesPubliques();
     });
   });
+  zone.querySelectorAll('.art-btn-modifier').forEach(b=>{
+    b.addEventListener('click',(ev)=>{
+      ev.stopPropagation();
+      editerArticle(articles[Number(b.dataset.i)]);
+    });
+  });
 }
+let articleEnEdition = null;
+
+function reinitialiserFormulaireArticle(){
+  articleEnEdition = null;
+  $('#art-titre').value=''; $('#art-texte').value=''; $('#art-cat').selectedIndex = 0;
+  fichierArtImage=null; $('#art-image').value=''; $('#apercu-art-image').classList.remove('visible'); $('#statut-art-image').textContent='';
+  $('#bandeau-edition-article').classList.remove('visible');
+  $('#btn-annuler-edition-article').style.display='none';
+  $('#btn-publier').textContent="Publier l'article";
+}
+
+function editerArticle(a){
+  if(!a.id) return;
+  articleEnEdition = a.id;
+  $('#art-titre').value = a.titre || '';
+  $('#art-cat').value = a.categorie || '';
+  $('#art-texte').value = a.texte || '';
+  fichierArtImage=null; $('#art-image').value=''; $('#statut-art-image').textContent='';
+  if(a.image_url){ $('#apercu-art-image').src=a.image_url; $('#apercu-art-image').classList.add('visible'); }
+  else { $('#apercu-art-image').classList.remove('visible'); }
+  $('#bandeau-edition-article').classList.add('visible');
+  $('#btn-annuler-edition-article').style.display='block';
+  $('#btn-publier').textContent='Enregistrer les modifications';
+  document.querySelector('#articles .creatrice').open = true;
+  $('#articles .creatrice').scrollIntoView({behavior:'smooth', block:'start'});
+}
+$('#btn-annuler-edition-article').addEventListener('click', reinitialiserFormulaireArticle);
+
 $('#btn-publier').addEventListener('click',async()=>{
   const titre=$('#art-titre').value.trim(), texte=$('#art-texte').value.trim();
   if(!titre){ $('#art-titre').focus(); return; }
   if(!texte){ $('#art-texte').focus(); return; }
   if(!sessionActuelle || !estAdmin) return;
+  const texteOriginal = articleEnEdition ? 'Enregistrer les modifications' : "Publier l'article";
   $('#btn-publier').textContent='Envoi…';
-  const image_url = await televerserImage(fichierArtImage, 'articles', 'statut-art-image');
-  const {error} = await supabaseClient.from('articles').insert({
-    titre, categorie:$('#art-cat').value, texte, image_url, created_by:sessionActuelle.user.id
-  });
-  if(error){ console.error('Publication impossible', error); $('#btn-publier').textContent="Erreur, réessaie"; setTimeout(()=>$('#btn-publier').textContent="Publier l'article",2000); return; }
-  $('#art-titre').value=''; $('#art-texte').value='';
-  fichierArtImage=null; $('#art-image').value=''; $('#apercu-art-image').classList.remove('visible'); $('#statut-art-image').textContent='';
+  let image_url = await televerserImage(fichierArtImage, 'articles', 'statut-art-image');
+  if(!image_url && articleEnEdition && !fichierArtImage){
+    const existant = articles.find(a=>a.id===articleEnEdition);
+    image_url = existant ? (existant.image_url||'') : '';
+  }
+  const donnees = { titre, categorie:$('#art-cat').value, texte, image_url };
+  let error;
+  if(articleEnEdition){
+    ({error} = await supabaseClient.from('articles').update(donnees).eq('id', articleEnEdition));
+  } else {
+    ({error} = await supabaseClient.from('articles').insert({...donnees, created_by:sessionActuelle.user.id}));
+  }
+  if(error){ console.error('Publication impossible', error); $('#btn-publier').textContent="Erreur, réessaie"; setTimeout(()=>$('#btn-publier').textContent=texteOriginal,2000); return; }
+  const messageSucces = articleEnEdition ? '✦ Modifié ✦' : '✦ Publié ✦';
+  reinitialiserFormulaireArticle();
   await chargerDonneesPubliques();
-  $('#btn-publier').textContent='✦ Publié ✦';
+  $('#btn-publier').textContent=messageSucces;
   setTimeout(()=>$('#btn-publier').textContent="Publier l'article",1500);
 });
 
