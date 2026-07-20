@@ -6,11 +6,13 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#FBF7EE">
 <link rel="manifest" href="/manifest.json">
-<link rel="apple-touch-icon" href="/icone-192.png">
+<link rel="apple-touch-icon" href="/icone-180.png">
 <title>L'Olfactothèque Tanika</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/@zxing/library@0.21.3"></script>
+<link href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
 <style>
   :root{
     --ivoire:#FBF7EE; --ivoire-fonce:#F3EBD9;
@@ -252,6 +254,40 @@
   .profil-salut{font-family:'Cinzel Decorative',serif;font-size:15px;color:var(--royal);letter-spacing:.03em}
   .profil-note{font-style:italic;color:var(--brun);font-size:14px;margin-top:4px}
   .separateur-titre{font-family:'Cinzel Decorative',serif;font-size:13px;letter-spacing:.1em;color:var(--royal);text-transform:uppercase;text-align:center;margin:28px 0 4px}
+  .grille-badges{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+  .badge-carte{border:1px solid var(--or-pale);border-radius:14px;background:#FFFDF7;padding:14px 8px;text-align:center}
+  .badge-carte.debloque{background:linear-gradient(160deg,#FFFDF7,var(--or-pale));border-color:var(--or)}
+  .badge-carte.verrouille{opacity:.4}
+  .badge-icone{font-size:28px;display:block}
+  .badge-nom{font-family:'Cinzel Decorative',serif;font-size:10px;letter-spacing:.04em;color:var(--royal);margin-top:8px;line-height:1.3}
+  .badge-condition{font-style:italic;color:var(--brun);font-size:11.5px;margin-top:4px}
+
+  /* RECADRAGE PHOTO */
+  #modal-recadrage{position:fixed;inset:0;z-index:9999;background:rgba(20,18,12,.9);display:none;flex-direction:column}
+  #modal-recadrage.visible{display:flex}
+  .recadrage-zone{flex:1;position:relative;overflow:hidden}
+  .recadrage-zone img{display:block;max-width:100%}
+  .recadrage-barre{padding:16px;display:flex;gap:10px;background:#14120C}
+  .recadrage-barre button{flex:1;padding:13px;border-radius:12px;border:none;font-family:'Cinzel Decorative',serif;font-size:12px;letter-spacing:.1em;cursor:pointer}
+  .recadrage-annuler{background:#2b2820;color:#EFE2B8}
+  .recadrage-valider{background:linear-gradient(180deg,var(--or-clair),var(--or));color:var(--royal)}
+
+  /* LIKES & COMMENTAIRES */
+  .art-interactions{display:flex;gap:16px;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid var(--or-pale)}
+  .btn-like{background:none;border:none;cursor:pointer;font-size:20px;display:flex;align-items:center;gap:6px;color:var(--brun);font-family:'Cormorant Garamond',serif;font-size:16px}
+  .btn-like.aime{color:var(--terre)}
+  .btn-toggle-commentaires{background:none;border:none;cursor:pointer;color:var(--brun);font-style:italic;font-size:15px;font-family:'Cormorant Garamond',serif}
+  .zone-commentaires{display:none;margin-top:14px;padding-top:14px;border-top:1px dashed var(--or-pale)}
+  .zone-commentaires.visible{display:block}
+  .commentaire{background:#FFFDF7;border:1px solid var(--or-pale);border-radius:10px;padding:10px 12px;margin-bottom:9px;position:relative}
+  .commentaire .c-auteur{font-family:'Cinzel Decorative',serif;font-size:11px;color:var(--royal);letter-spacing:.04em}
+  .commentaire .c-date{font-style:italic;color:var(--brun);font-size:11.5px;margin-left:6px}
+  .commentaire .c-texte{font-size:15.5px;margin-top:4px;line-height:1.4}
+  .commentaire .c-suppr{position:absolute;top:8px;right:10px;background:none;border:none;color:var(--brun);opacity:.5;cursor:pointer;font-size:13px}
+  .form-commentaire{display:flex;gap:8px;margin-top:10px}
+  .form-commentaire input{flex:1;border-radius:20px;padding:10px 15px;font-size:15px}
+  .form-commentaire button{background:var(--or);border:none;color:var(--ivoire);border-radius:20px;padding:0 16px;font-family:'Cinzel Decorative',serif;font-size:12px;cursor:pointer}
+  .connexion-requise{font-style:italic;color:var(--brun);font-size:14px;text-align:center;margin-top:8px}
   .bib-carte{border:1px solid var(--or-pale);border-radius:12px;background:#FFFDF7;padding:12px 14px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
   .bib-check{width:20px;height:20px;accent-color:var(--or);flex-shrink:0}
   .bib-info{flex:1}
@@ -412,8 +448,9 @@
 
       <div class="intention-carte">
         <h4>✦ Ton intention du moment ✦</h4>
-        <p class="intention-resume" id="resume-etat">Comment te sens-tu aujourd'hui ?</p>
+        <p class="intention-resume" id="resume-etat">Comment te sens-tu aujourd'hui ? (choix multiple)</p>
         <div class="chips" id="chips-etat"></div>
+        <button class="bouton-or bouton-ligne" id="btn-continuer-etat" style="display:none;margin-top:14px">Continuer ✦</button>
         <p class="intention-resume" id="resume-intention" style="display:none">Quelle énergie souhaites-tu incarner ?</p>
         <div class="chips" id="chips-intention" style="display:none"></div>
         <button class="lien-modifier" id="btn-modifier-intention" style="display:none">Modifier mon intention</button>
@@ -559,6 +596,9 @@
       <button class="bouton-or" id="btn-consigner">Consigner</button>
       <div id="entrees" style="margin-top:26px"></div>
 
+      <div class="separateur-titre">✦ Mes Badges ✦</div>
+      <div class="grille-badges" id="grille-badges"></div>
+
       <div class="separateur-titre">✦ Ma Bibliothèque de Scans ✦</div>
       <p class="invocation" style="margin-top:0">Coche deux parfums pour comparer leurs énergies.</p>
       <div id="liste-bibliotheque"></div>
@@ -660,6 +700,16 @@
         <input type="text" id="chat-input" placeholder="Pose ta question…">
         <button class="chat-envoyer" id="chat-envoyer">➤</button>
       </div>
+    </div>
+  </div>
+
+  <div id="modal-recadrage">
+    <div class="recadrage-zone">
+      <img id="image-a-recadrer" alt="Image à recadrer">
+    </div>
+    <div class="recadrage-barre">
+      <button class="recadrage-annuler" id="btn-recadrage-annuler">Annuler</button>
+      <button class="recadrage-valider" id="btn-recadrage-valider">✦ Valider le cadrage ✦</button>
     </div>
   </div>
 
@@ -787,32 +837,32 @@ const REPERTOIRE_BASE = [
 ];
 
 const MANTRAS = [
-  {cle:"ancrage", theme:"Ancrage", txt:"« Je suis la terre qui ne tremble pas. Rien ni personne ne déplace mon centre. »"},
-  {cle:"ancrage", theme:"Ancrage", txt:"« Mes racines sont profondes. Je grandis droite, sans avoir besoin de bruit. »"},
-  {cle:"amour", theme:"Amour", txt:"« Je suis l'amour que je cherche ailleurs. Il commence ici, en moi, maintenant. »"},
-  {cle:"amour", theme:"Amour", txt:"« Mon cœur s'ouvre en toute sécurité. J'aime et je suis aimée en juste mesure. »"},
-  {cle:"confiance", theme:"Confiance", txt:"« Je rayonne sans permission. Mon soleil intérieur ne demande la validation de personne. »"},
-  {cle:"confiance", theme:"Confiance", txt:"« Je marche dans ma puissance. Ma seule présence change la fréquence d'une pièce. »"},
-  {cle:"expression", theme:"Parole", txt:"« Ma voix est une arme sacrée. Je dis ma vérité sans trembler, sans m'excuser. »"},
-  {cle:"expression", theme:"Parole", txt:"« Ce que je tais depuis trop longtemps se libère aujourd'hui, avec grâce et fermeté. »"},
-  {cle:"intuition", theme:"Intuition", txt:"« Je sais avant de comprendre. Mon regard intérieur ne se trompe jamais. »"},
-  {cle:"clarte", theme:"Clarté", txt:"« Le brouillard se lève. Ma vision est nette, mes décisions sont justes. »"},
-  {cle:"creativite", theme:"Créativité", txt:"« Je crée par plaisir, jamais par peur. Mon élan créateur est infini. »"},
-  {cle:"seduction", theme:"Séduction", txt:"« Ma sensualité est sacrée. Je l'habite sans honte et sans excuse. »"},
-  {cle:"confiance", theme:"Souveraineté", txt:"« Je n'ai rien à prouver à qui que ce soit. Ma signature, c'est ma présence. »"},
-  {cle:"abondance", theme:"Abondance", txt:"« Je mérite de recevoir sans culpabilité. L'abondance me cherche autant que je la cherche. »"},
-  {cle:"abondance", theme:"Abondance", txt:"« Je suis un aimant à opportunités. Ce qui est pour moi me trouve sans effort. »"},
-  {cle:"protection", theme:"Protection", txt:"« Je suis entourée d'une lumière que rien de négatif ne peut traverser. »"},
-  {cle:"guerison", theme:"Guérison", txt:"« Je me libère de ce qui ne m'appartient plus. Chaque respiration me guérit un peu plus. »"},
-  {cle:"pardon", theme:"Pardon", txt:"« Je pardonne pour me libérer, pas pour excuser. Ce poids n'est plus le mien à porter. »"},
-  {cle:"lacherprise", theme:"Lâcher-prise", txt:"« Je relâche ce que je ne contrôle pas. Ce qui doit rester, reste ; le reste s'en va. »"},
-  {cle:"sommeil", theme:"Sommeil", txt:"« Mon corps se dépose. Cette nuit m'appartient, et elle me répare entièrement. »"},
-  {cle:"chance", theme:"Chance", txt:"« Je suis alignée avec la bonne fortune. Les portes s'ouvrent au bon moment pour moi. »"},
-  {cle:"spiritualite", theme:"Élévation", txt:"« Je m'élève. Le sacré circule en moi et éclaire chacun de mes pas. »"},
-  {cle:"courage", theme:"Courage", txt:"« La peur est présente, et j'avance quand même. Mon courage est plus grand qu'elle. »"},
-  {cle:"gratitude", theme:"Gratitude", txt:"« Je vois déjà tout ce qui va bien. Ma gratitude ouvre la porte à davantage encore. »"},
-  {cle:"purification", theme:"Purification", txt:"« Je nettoie mon champ. Ce qui n'est plus aligné avec moi n'a plus sa place ici. »"},
-  {cle:"repos", theme:"Repos", txt:"« Je m'autorise à ne rien faire. Me reposer n'est pas un luxe, c'est un besoin sacré. »"}
+  {cle:"ancrage", theme:"Ancrage", txt:"« Je suis souveraine sur ma terre. Aucune tempête ne délogera ce qui est bâti en moi. »"},
+  {cle:"ancrage", theme:"Ancrage", txt:"« Mon trône est planté dans le réel. Je ne négocie pas ma stabilité. »"},
+  {cle:"amour", theme:"Amour", txt:"« Je règne sur mon propre cœur. Personne d'autre n'en détient les clés. »"},
+  {cle:"amour", theme:"Amour", txt:"« J'aime depuis un lieu de plénitude, jamais de manque. Mon amour ne se quémande pas. »"},
+  {cle:"confiance", theme:"Confiance", txt:"« Je ne demande pas la permission de rayonner. Mon éclat est un droit, pas une faveur. »"},
+  {cle:"confiance", theme:"Confiance", txt:"« J'entre dans chaque pièce en souveraine. Ma présence seule fait autorité. »"},
+  {cle:"expression", theme:"Parole", txt:"« Ma voix est loi. Je la pose avec certitude, jamais avec excuse. »"},
+  {cle:"expression", theme:"Parole", txt:"« Ce que je décrète aujourd'hui se manifeste. Mes mots ont du poids parce que je le décide. »"},
+  {cle:"intuition", theme:"Intuition", txt:"« Mon regard intérieur est ma couronne. Je sais, et je n'ai de comptes à rendre à personne. »"},
+  {cle:"clarte", theme:"Clarté", txt:"« Je vois avec la netteté d'une reine qui gouverne son royaume. Rien ne m'échappe. »"},
+  {cle:"creativite", theme:"Créativité", txt:"« Je crée parce que je suis souveraine de mon monde intérieur. Mon élan ne demande de compte à personne. »"},
+  {cle:"seduction", theme:"Séduction", txt:"« Ma sensualité est un territoire que je gouverne seule. J'y entre qui je veux, quand je veux. »"},
+  {cle:"confiance", theme:"Souveraineté", txt:"« Je n'ai rien à prouver. Je suis déjà l'autorité sur ma propre vie. »"},
+  {cle:"abondance", theme:"Abondance", txt:"« L'abondance est mon héritage naturel. Je la reçois en souveraine, sans me confondre en gratitude excessive. »"},
+  {cle:"abondance", theme:"Abondance", txt:"« Je décrète l'abondance et je l'accueille sans résistance. Ce qui est à moi me revient. »"},
+  {cle:"protection", theme:"Protection", txt:"« Mon champ est une forteresse. Rien n'y entre sans mon autorisation. »"},
+  {cle:"guerison", theme:"Guérison", txt:"« Je reprends possession de chaque part de moi laissée en chemin. Je me guéris en maîtresse de mon histoire. »"},
+  {cle:"pardon", theme:"Pardon", txt:"« Je pardonne depuis ma souveraineté, pas depuis ma faiblesse. Ce poids ne siège plus sur mon trône. »"},
+  {cle:"lacherprise", theme:"Lâcher-prise", txt:"« Je gouverne ce qui m'appartient et je relâche le reste sans un regard en arrière. »"},
+  {cle:"sommeil", theme:"Sommeil", txt:"« Cette nuit m'appartient entièrement. Je me repose en souveraine, sans dette envers personne. »"},
+  {cle:"chance", theme:"Chance", txt:"« La fortune reconnaît sa reine. Les portes s'ouvrent parce que je marche en étant déjà arrivée. »"},
+  {cle:"spiritualite", theme:"Élévation", txt:"« Je m'élève parce que c'est mon rang. Le sacré ne circule pas en moi par hasard. »"},
+  {cle:"courage", theme:"Courage", txt:"« Je n'attends pas l'absence de peur pour avancer. Mon courage est un ordre que je me donne. »"},
+  {cle:"gratitude", theme:"Gratitude", txt:"« Je reconnais ce qui m'est dû et je l'honore. Ma gratitude est puissance, pas soumission. »"},
+  {cle:"purification", theme:"Purification", txt:"« Je décide de ce qui reste dans mon champ. Ce qui n'est plus digne de moi est banni. »"},
+  {cle:"repos", theme:"Repos", txt:"« Me reposer est un décret royal, pas une permission à obtenir. Je m'arrête parce que je le choisis. »"}
 ];
 
 const $ = s => document.querySelector(s);
@@ -838,6 +888,7 @@ $('#btn-decouvrir-produits').addEventListener('click',()=>aller('scanner'));
 
 /* ============ DONNÉES (SUPABASE) ============ */
 let ajouts=[], entrees=[], articles=[], profil=null, bibliotheque=[];
+let likesTous=[], commentairesTous=[];
 
 async function chargerDonneesPubliques(){
   try{
@@ -848,11 +899,19 @@ async function chargerDonneesPubliques(){
     const {data} = await supabaseClient.from('articles').select('*').order('created_at',{ascending:false});
     if(data) articles = data.map(a=>({titre:a.titre, categorie:a.categorie, texte:a.texte, date:a.created_at, id:a.id, image_url:a.image_url}));
   }catch(e){ console.error('Chargement articles impossible', e); }
+  try{
+    const {data} = await supabaseClient.from('article_likes').select('*');
+    if(data) likesTous = data;
+  }catch(e){ console.error('Chargement likes impossible', e); }
+  try{
+    const {data} = await supabaseClient.from('article_comments').select('*').order('created_at',{ascending:true});
+    if(data) commentairesTous = data;
+  }catch(e){ console.error('Chargement commentaires impossible', e); }
   afficherClasseur(); afficherArticles();
 }
 
 async function chargerDonneesPersonnelles(){
-  if(!sessionActuelle){ entrees=[]; bibliotheque=[]; profil=null; afficherEntrees(); afficherBibliotheque(); return; }
+  if(!sessionActuelle){ entrees=[]; bibliotheque=[]; profil=null; afficherEntrees(); afficherBibliotheque(); afficherBadges(); return; }
   const uid = sessionActuelle.user.id;
   try{
     const {data:prof} = await supabaseClient.from('profiles').select('*').eq('id',uid).single();
@@ -866,7 +925,7 @@ async function chargerDonneesPersonnelles(){
     const {data} = await supabaseClient.from('scans').select('*').eq('user_id',uid).order('created_at',{ascending:false});
     if(data) bibliotheque = data.map(s=>({nom:s.nom, marque:s.marque, bovis:s.bovis, chakra:s.chakra, intention:s.intention, date:s.created_at, id:s.id}));
   }catch(e){ console.error('Chargement bibliothèque impossible', e); }
-  afficherProfil(); afficherEntrees(); afficherBibliotheque(); mettreAJourEspacesCreatrice();
+  afficherProfil(); afficherEntrees(); afficherBibliotheque(); afficherBadges(); mettreAJourEspacesCreatrice();
 }
 
 function mettreAJourEspacesCreatrice(){
@@ -895,34 +954,40 @@ if(supabaseClient){
 function repertoire(){ return [...ajouts, ...REPERTOIRE_BASE]; }
 
 /* ============ SCANNER D'INTENTION ============ */
-let etatChoisi = null, intentionChoisie = null;
+let etatsChoisis = [], intentionChoisie = null;
 
 function construireChipsIntention(){
   $('#chips-etat').innerHTML = ETATS.map(e=>`<button class="chip" data-e="${e.cle}">${e.label}</button>`).join('');
   $('#chips-intention').innerHTML = INTENTIONS.map(i=>`<button class="chip" data-i="${i.cle}">${i.label}</button>`).join('');
 
   $('#chips-etat').querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>{
-    etatChoisi = ETATS.find(e=>e.cle===b.dataset.e);
-    $('#chips-etat').querySelectorAll('.chip').forEach(c=>c.classList.remove('choisi'));
-    b.classList.add('choisi');
+    b.classList.toggle('choisi');
+    etatsChoisis = ETATS.filter(e=>$('#chips-etat').querySelector(`[data-e="${e.cle}"]`).classList.contains('choisi'));
+    $('#btn-continuer-etat').style.display = etatsChoisis.length ? 'block' : 'none';
+  }));
+  $('#btn-continuer-etat').addEventListener('click',()=>{
+    if(!etatsChoisis.length) return;
     $('#resume-etat').style.display='none';
     $('#chips-etat').style.display='none';
+    $('#btn-continuer-etat').style.display='none';
     $('#resume-intention').style.display='block';
     $('#chips-intention').style.display='flex';
-  }));
+  });
   $('#chips-intention').querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>{
     intentionChoisie = INTENTIONS.find(i=>i.cle===b.dataset.i);
     $('#chips-intention').querySelectorAll('.chip').forEach(c=>c.classList.remove('choisi'));
     b.classList.add('choisi');
-    $('#resume-intention').textContent = `✦ Tu portes aujourd'hui l'intention : ${intentionChoisie.label} ✦`;
+    const etatsTxt = etatsChoisis.map(e=>e.label).join(', ');
+    $('#resume-intention').textContent = `✦ Tu te sens ${etatsTxt}, et tu portes l'intention : ${intentionChoisie.label} ✦`;
     $('#chips-intention').style.display='none';
     $('#btn-modifier-intention').style.display='block';
   }));
 }
 $('#btn-modifier-intention').addEventListener('click',()=>{
-  etatChoisi=null; intentionChoisie=null;
-  $('#resume-etat').textContent="Comment te sens-tu aujourd'hui ?";
+  etatsChoisis=[]; intentionChoisie=null;
+  $('#resume-etat').textContent="Comment te sens-tu aujourd'hui ? (choix multiple)";
   $('#resume-etat').style.display='block'; $('#chips-etat').style.display='flex';
+  $('#btn-continuer-etat').style.display='none';
   $('#resume-intention').style.display='none'; $('#chips-intention').style.display='none';
   $('#btn-modifier-intention').style.display='none';
   $('#chips-etat').querySelectorAll('.chip').forEach(c=>c.classList.remove('choisi'));
@@ -1127,7 +1192,43 @@ function brancherApercu(inputId, apercuId, onFichier){
   });
 }
 brancherApercu('a-image','apercu-a-image', f=>fichierAImage=f);
-brancherApercu('art-image','apercu-art-image', f=>fichierArtImage=f);
+
+/* Recadrage obligatoire pour les images d'articles (format 16:9, celui utilisé à l'affichage) */
+let instanceCropper = null;
+$('#art-image').addEventListener('change',(e)=>{
+  const fichier = e.target.files[0];
+  if(!fichier) return;
+  const lecteur = new FileReader();
+  lecteur.onload = ()=>{
+    $('#image-a-recadrer').src = lecteur.result;
+    $('#modal-recadrage').classList.add('visible');
+    if(instanceCropper) instanceCropper.destroy();
+    instanceCropper = new Cropper($('#image-a-recadrer'), {
+      aspectRatio: 16/9,
+      viewMode: 1,
+      autoCropArea: 1,
+      background: false,
+      movable: true,
+      zoomable: true
+    });
+  };
+  lecteur.readAsDataURL(fichier);
+});
+$('#btn-recadrage-annuler').addEventListener('click',()=>{
+  if(instanceCropper){ instanceCropper.destroy(); instanceCropper=null; }
+  $('#modal-recadrage').classList.remove('visible');
+  $('#art-image').value='';
+});
+$('#btn-recadrage-valider').addEventListener('click',()=>{
+  if(!instanceCropper) return;
+  instanceCropper.getCroppedCanvas({width:1280, height:720}).toBlob((blob)=>{
+    fichierArtImage = new File([blob], 'article.jpg', {type:'image/jpeg'});
+    $('#apercu-art-image').src = URL.createObjectURL(blob);
+    $('#apercu-art-image').classList.add('visible');
+    instanceCropper.destroy(); instanceCropper=null;
+    $('#modal-recadrage').classList.remove('visible');
+  }, 'image/jpeg', 0.9);
+});
 
 async function televerserImage(fichier, dossier, statutId){
   if(!fichier) return '';
@@ -1353,6 +1454,32 @@ function afficherBibliotheque(){
   zone.querySelectorAll('.bib-check').forEach(c=>c.addEventListener('change',majBoutonComparer));
   majBoutonComparer();
 }
+
+/* ============ BADGES ============ */
+const BADGES = [
+  {cle:'premier-scan', icone:'🔮', nom:'Premier Scan', condition: ()=>bibliotheque.length>=1, cible: 'Scanne 1 parfum'},
+  {cle:'exploratrice', icone:'🧭', nom:'Exploratrice', condition: ()=>bibliotheque.length>=5, cible: 'Scanne 5 parfums'},
+  {cle:'collectionneuse', icone:'📚', nom:'Collectionneuse', condition: ()=>bibliotheque.length>=20, cible: 'Scanne 20 parfums'},
+  {cle:'premiere-page', icone:'✨', nom:'Première Page', condition: ()=>entrees.length>=1, cible: 'Écris 1 entrée'},
+  {cle:'assidue', icone:'🕯️', nom:'Journal Assidue', condition: ()=>entrees.length>=7, cible: 'Écris 7 entrées'},
+  {cle:'ancree', icone:'🌙', nom:'Rituel Ancré', condition: ()=>entrees.length>=30, cible: 'Écris 30 entrées'}
+];
+function afficherBadges(){
+  const zone = $('#grille-badges');
+  if(!zone) return;
+  if(!sessionActuelle){
+    zone.innerHTML = '<p class="vide" style="grid-column:1/-1">Connecte-toi pour débloquer tes badges. ✦</p>';
+    return;
+  }
+  zone.innerHTML = BADGES.map(b=>{
+    const debloque = b.condition();
+    return `<div class="badge-carte ${debloque?'debloque':'verrouille'}">
+      <span class="badge-icone">${b.icone}</span>
+      <div class="badge-nom">${b.nom}</div>
+      <div class="badge-condition">${debloque?'✦ Débloqué ✦':b.cible}</div>
+    </div>`;
+  }).join('');
+}
 function majBoutonComparer(){
   const coches = [...document.querySelectorAll('.bib-check:checked')];
   $('#btn-comparer').style.display = coches.length===2 ? 'block' : 'none';
@@ -1420,9 +1547,13 @@ function afficherArticles(){
     zone.innerHTML='<p class="vide">Aucun article publié pour l\'instant.<br>Nossane prépare ses premières guidances. ✦</p>';
     return;
   }
+  const monId = sessionActuelle ? sessionActuelle.user.id : null;
   const tries=[...articles].sort((a,b)=>new Date(b.date)-new Date(a.date));
   zone.innerHTML = tries.map((a)=>{
     const i = articles.indexOf(a);
+    const likesArticle = likesTous.filter(l=>l.article_id===a.id);
+    const jAime = monId && likesArticle.some(l=>l.user_id===monId);
+    const commentairesArticle = commentairesTous.filter(c=>c.article_id===a.id);
     return `<div class="article" data-i="${i}">
       <div class="art-tete">
         <div>
@@ -1436,12 +1567,27 @@ function afficherArticles(){
       <div class="art-corps">
         <div class="art-texte">${a.texte}</div>
         ${estAdmin?`<button type="button" class="art-btn-modifier" data-i="${i}" style="margin-top:12px">✏️ Modifier cet article</button>`:''}
+        <div class="art-interactions">
+          <button type="button" class="btn-like ${jAime?'aime':''}" data-id="${a.id}">${jAime?'❤️':'🤍'} <span>${likesArticle.length}</span></button>
+          <button type="button" class="btn-toggle-commentaires" data-id="${a.id}">💬 ${commentairesArticle.length} commentaire${commentairesArticle.length>1?'s':''}</button>
+        </div>
+        <div class="zone-commentaires" id="commentaires-${a.id}">
+          ${commentairesArticle.map(c=>`
+            <div class="commentaire">
+              ${(monId===c.user_id||estAdmin)?`<button class="c-suppr" data-cid="${c.id}">✕</button>`:''}
+              <span class="c-auteur">${c.prenom||'Une cliente'}</span><span class="c-date">${formatDateArticle(c.created_at)}</span>
+              <div class="c-texte">${c.texte}</div>
+            </div>`).join('') || '<p class="vide" style="padding:10px 0">Aucun commentaire pour l\'instant.</p>'}
+          ${sessionActuelle
+            ? `<div class="form-commentaire"><input type="text" placeholder="Ton commentaire…" id="saisie-commentaire-${a.id}"><button type="button" class="btn-envoyer-commentaire" data-id="${a.id}">Publier</button></div>`
+            : `<p class="connexion-requise">Connecte-toi dans l'onglet Espace pour commenter.</p>`}
+        </div>
       </div>
     </div>`;
   }).join('');
   zone.querySelectorAll('.article').forEach(el=>{
     el.addEventListener('click',(ev)=>{
-      if(ev.target.classList.contains('suppr-art') || ev.target.classList.contains('art-btn-modifier')) return;
+      if(ev.target.closest('.art-interactions, .zone-commentaires, .suppr-art, .art-btn-modifier')) return;
       el.classList.toggle('ouvert');
     });
   });
@@ -1460,7 +1606,56 @@ function afficherArticles(){
       editerArticle(articles[Number(b.dataset.i)]);
     });
   });
+  zone.querySelectorAll('.btn-like').forEach(b=>{
+    b.addEventListener('click',(ev)=>{ ev.stopPropagation(); basculerLike(b.dataset.id); });
+  });
+  zone.querySelectorAll('.btn-toggle-commentaires').forEach(b=>{
+    b.addEventListener('click',(ev)=>{
+      ev.stopPropagation();
+      $('#commentaires-'+b.dataset.id).classList.toggle('visible');
+    });
+  });
+  zone.querySelectorAll('.btn-envoyer-commentaire').forEach(b=>{
+    b.addEventListener('click',(ev)=>{ ev.stopPropagation(); publierCommentaire(b.dataset.id); });
+  });
+  zone.querySelectorAll('.c-suppr').forEach(b=>{
+    b.addEventListener('click',async(ev)=>{
+      ev.stopPropagation();
+      if(!confirm('Supprimer ce commentaire ?')) return;
+      await supabaseClient.from('article_comments').delete().eq('id', b.dataset.cid);
+      await chargerDonneesPubliques();
+    });
+  });
 }
+
+async function basculerLike(articleId){
+  if(!sessionActuelle){ aller('journal'); return; }
+  const uid = sessionActuelle.user.id;
+  const dejaLike = likesTous.find(l=>l.article_id===articleId && l.user_id===uid);
+  if(dejaLike){
+    await supabaseClient.from('article_likes').delete().eq('article_id',articleId).eq('user_id',uid);
+  } else {
+    await supabaseClient.from('article_likes').insert({article_id:articleId, user_id:uid});
+  }
+  await chargerDonneesPubliques();
+}
+
+async function publierCommentaire(articleId){
+  if(!sessionActuelle) return;
+  const champ = $('#saisie-commentaire-'+articleId);
+  const texte = champ.value.trim();
+  if(!texte) return;
+  const {error} = await supabaseClient.from('article_comments').insert({
+    article_id: articleId, user_id: sessionActuelle.user.id,
+    prenom: (profil && profil.prenom) ? profil.prenom : 'Une cliente',
+    texte
+  });
+  if(error){ console.error('Commentaire impossible', error); return; }
+  await chargerDonneesPubliques();
+  const zoneCom = $('#commentaires-'+articleId);
+  if(zoneCom) zoneCom.classList.add('visible');
+}
+
 let articleEnEdition = null;
 
 function reinitialiserFormulaireArticle(){
@@ -1659,12 +1854,10 @@ async function envoyerMessageChat(texte){
 
   const bulleTape = afficherTape();
   try{
-    const reponse = await fetch("https://api.anthropic.com/v1/messages", {
+    const reponse = await fetch("/.netlify/functions/chat-tanika", {
       method:"POST",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify({
-        model:"claude-sonnet-4-6",
-        max_tokens:1000,
         system:SYSTEME_CHAT,
         messages:historiqueChat
       })
