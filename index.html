@@ -255,6 +255,19 @@
   .profil-note{font-style:italic;color:var(--brun);font-size:14px;margin-top:4px}
   .separateur-titre{font-family:'Cinzel Decorative',serif;font-size:13px;letter-spacing:.1em;color:var(--royal);text-transform:uppercase;text-align:center;margin:28px 0 4px}
   .grille-badges{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+  .carte-parrainage{border:1px solid var(--or);border-radius:16px;background:radial-gradient(circle at 50% 0%,#2b3d84,var(--royal));color:#F7EFD8;padding:20px 18px;text-align:center;margin-top:16px}
+  .carte-parrainage .cp-titre{font-family:'Cinzel Decorative',serif;font-size:13px;letter-spacing:.1em;color:var(--or-clair);text-transform:uppercase}
+  .carte-parrainage .cp-compteur{font-family:'Cinzel Decorative',serif;font-size:32px;margin-top:10px}
+  .carte-parrainage .cp-sous{font-style:italic;font-size:14px;opacity:.85;margin-top:2px}
+  .cp-lien-bloc{background:rgba(255,255,255,.08);border-radius:10px;padding:12px;margin-top:16px;word-break:break-all;font-size:13px;font-family:monospace}
+  .cp-boutons{display:flex;gap:8px;margin-top:12px}
+  .cp-boutons button{flex:1;font-family:'Cinzel Decorative',serif;font-size:11.5px;letter-spacing:.08em;padding:11px;border-radius:10px;border:none;cursor:pointer}
+  .cp-btn-copier{background:var(--or-clair);color:var(--royal)}
+  .cp-btn-partager{background:rgba(255,255,255,.15);color:#F7EFD8;border:1px solid rgba(255,255,255,.3) !important}
+  .cp-recompense{margin-top:16px;padding-top:16px;border-top:1px solid rgba(227,199,102,.3)}
+  .cp-recompense.verrouille{opacity:.55}
+  .cp-code-promo{font-family:'Cinzel Decorative',serif;font-size:22px;letter-spacing:.08em;color:var(--or-clair);margin-top:8px}
+  .cp-statut-copie{font-size:12.5px;font-style:italic;margin-top:8px;min-height:16px;opacity:.85}
   .badge-carte{border:1px solid var(--or-pale);border-radius:14px;background:#FFFDF7;padding:14px 8px;text-align:center}
   .badge-carte.debloque{background:linear-gradient(160deg,#FFFDF7,var(--or-pale));border-color:var(--or)}
   .badge-carte.verrouille{opacity:.4}
@@ -579,6 +592,23 @@
           <div class="profil-connecte">
             <div class="profil-salut" id="profil-salut"></div>
             <button class="btn-deconnexion" id="btn-deconnexion">Déconnexion</button>
+          </div>
+        </div>
+
+        <div class="carte-parrainage">
+          <div class="cp-titre">✦ Parraine une amie ✦</div>
+          <div class="cp-compteur" id="cp-compteur">0</div>
+          <div class="cp-sous" id="cp-sous">amie inscrite grâce à toi</div>
+          <div class="cp-lien-bloc" id="cp-lien"></div>
+          <div class="cp-boutons">
+            <button class="cp-btn-copier" id="btn-copier-lien">Copier le lien</button>
+            <button class="cp-btn-partager" id="btn-partager-lien">Partager</button>
+          </div>
+          <p class="cp-statut-copie" id="cp-statut"></p>
+          <div class="cp-recompense" id="cp-recompense">
+            <div class="cp-titre">Ta récompense</div>
+            <p class="cp-sous" id="cp-recompense-texte">Invite 1 amie pour débloquer -15% sur la Précommande</p>
+            <div class="cp-code-promo" id="cp-code-promo" style="display:none">PARRAINAGE15</div>
           </div>
         </div>
 
@@ -915,7 +945,11 @@ async function chargerDonneesPersonnelles(){
   const uid = sessionActuelle.user.id;
   try{
     const {data:prof} = await supabaseClient.from('profiles').select('*').eq('id',uid).single();
-    if(prof){ profil={prenom:prof.prenom}; estAdmin = !!prof.is_admin; }
+    if(prof){
+      profil={prenom:prof.prenom, code_parrainage:prof.code_parrainage};
+      estAdmin = !!prof.is_admin;
+      if(codeParrainageURL && !prof.parraine_par) await lierAuParrain(uid);
+    }
   }catch(e){ console.error('Chargement profil impossible', e); }
   try{
     const {data} = await supabaseClient.from('journal').select('*').eq('user_id',uid).order('created_at',{ascending:false});
@@ -925,7 +959,7 @@ async function chargerDonneesPersonnelles(){
     const {data} = await supabaseClient.from('scans').select('*').eq('user_id',uid).order('created_at',{ascending:false});
     if(data) bibliotheque = data.map(s=>({nom:s.nom, marque:s.marque, bovis:s.bovis, chakra:s.chakra, intention:s.intention, date:s.created_at, id:s.id}));
   }catch(e){ console.error('Chargement bibliothèque impossible', e); }
-  afficherProfil(); afficherEntrees(); afficherBibliotheque(); afficherBadges(); mettreAJourEspacesCreatrice();
+  afficherProfil(); afficherEntrees(); afficherBibliotheque(); afficherBadges(); afficherParrainage(); mettreAJourEspacesCreatrice();
 }
 
 function mettreAJourEspacesCreatrice(){
@@ -1407,6 +1441,7 @@ $('#btn-inscription').addEventListener('click',async()=>{
   if(error){ afficherErreurAuth(error.message.includes('already') ? 'Un compte existe déjà avec cet email.' : "Erreur à l'inscription : " + error.message); return; }
 
   if(data && data.session){
+    if(data.user) await lierAuParrain(data.user.id);
     afficherSuccesAuth('✦ Compte créé et connecté ✦');
   } else {
     afficherSuccesAuth('✦ Compte créé ! Vérifie ta boîte mail (et les spams) pour confirmer ton adresse avant de te connecter. ✦');
@@ -1479,6 +1514,76 @@ function afficherBadges(){
       <div class="badge-condition">${debloque?'✦ Débloqué ✦':b.cible}</div>
     </div>`;
   }).join('');
+}
+
+/* ============ PARRAINAGE ============ */
+const CODE_PROMO_PARRAINAGE = 'PARRAINAGE15';
+async function afficherParrainage(){
+  const carte = document.querySelector('.carte-parrainage');
+  if(!carte) return;
+  if(!sessionActuelle || !profil || !profil.code_parrainage){ carte.style.display='none'; return; }
+  carte.style.display='block';
+
+  const lien = `${window.location.origin}/?parrain=${profil.code_parrainage}`;
+  $('#cp-lien').textContent = lien;
+
+  let nombreFilleules = 0;
+  try{
+    const {count} = await supabaseClient.from('profiles').select('id', {count:'exact', head:true}).eq('parraine_par', sessionActuelle.user.id);
+    nombreFilleules = count || 0;
+  }catch(e){ console.error('Comptage parrainage impossible', e); }
+
+  $('#cp-compteur').textContent = nombreFilleules;
+  $('#cp-sous').textContent = nombreFilleules>1 ? 'amies inscrites grâce à toi' : 'amie inscrite grâce à toi';
+
+  const debloque = nombreFilleules >= 1;
+  $('#cp-recompense').classList.toggle('verrouille', !debloque);
+  if(debloque){
+    $('#cp-recompense-texte').textContent = '✦ Débloqué ! Utilise ce code à ta prochaine Précommande ✦';
+    $('#cp-code-promo').style.display='block';
+    $('#cp-code-promo').textContent = CODE_PROMO_PARRAINAGE;
+  } else {
+    $('#cp-recompense-texte').textContent = 'Invite 1 amie pour débloquer -15% sur la Précommande';
+    $('#cp-code-promo').style.display='none';
+  }
+}
+$('#btn-copier-lien').addEventListener('click',async()=>{
+  const lien = $('#cp-lien').textContent;
+  try{
+    await navigator.clipboard.writeText(lien);
+    $('#cp-statut').textContent = '✦ Lien copié ✦';
+  }catch(e){
+    $('#cp-statut').textContent = 'Copie impossible, sélectionne le lien manuellement.';
+  }
+  setTimeout(()=>$('#cp-statut').textContent='', 2500);
+});
+$('#btn-partager-lien').addEventListener('click',async()=>{
+  const lien = $('#cp-lien').textContent;
+  if(navigator.share){
+    try{ await navigator.share({title:'Tanika — Découvre l\'Olfactothèque', text:'Rejoins-moi sur l\'Olfactothèque Tanika ✦', url:lien}); }
+    catch(e){ /* partage annulé, rien à faire */ }
+  } else {
+    await navigator.clipboard.writeText(lien).catch(()=>{});
+    $('#cp-statut').textContent = 'Lien copié — colle-le où tu veux ✦';
+    setTimeout(()=>$('#cp-statut').textContent='', 2500);
+  }
+});
+
+/* Capture du code de parrainage présent dans l'URL, s'il y en a un */
+let codeParrainageURL = null;
+try{
+  const parametres = new URLSearchParams(window.location.search);
+  if(parametres.get('parrain')) codeParrainageURL = parametres.get('parrain').toUpperCase();
+}catch(e){}
+
+async function lierAuParrain(nouvelUtilisateurId){
+  if(!codeParrainageURL) return;
+  try{
+    const {data} = await supabaseClient.from('parrainage_lookup').select('id').eq('code_parrainage', codeParrainageURL).single();
+    if(data && data.id && data.id !== nouvelUtilisateurId){
+      await supabaseClient.from('profiles').update({parraine_par: data.id}).eq('id', nouvelUtilisateurId);
+    }
+  }catch(e){ console.error('Liaison parrainage impossible', e); }
 }
 function majBoutonComparer(){
   const coches = [...document.querySelectorAll('.bib-check:checked')];
