@@ -192,6 +192,7 @@
   .p-detail{max-height:0;overflow:hidden;transition:max-height .35s ease}
   .parfum.ouvert .p-detail{max-height:300px;margin-top:10px}
   .p-detail .l{font-size:15.5px;margin-top:5px;line-height:1.4}
+  .p-detail .l-verrouille{font-style:italic;color:var(--brun);font-size:14.5px;opacity:.8}
   .p-detail .l b{color:var(--brun)}
   .p-actions-admin{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--or-pale)}
   .p-btn-modifier,.p-btn-supprimer,.art-btn-modifier{flex:1;border:1px solid var(--or-pale);background:#FFFDF7;border-radius:10px;padding:9px;font-family:'Cormorant Garamond',serif;font-size:14.5px;color:var(--brun);cursor:pointer}
@@ -255,6 +256,22 @@
   .profil-note{font-style:italic;color:var(--brun);font-size:14px;margin-top:4px}
   .separateur-titre{font-family:'Cinzel Decorative',serif;font-size:13px;letter-spacing:.1em;color:var(--royal);text-transform:uppercase;text-align:center;margin:28px 0 4px}
   .grille-badges{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+  .carte-abonnement{border:1px solid var(--or);border-radius:16px;background:linear-gradient(165deg,#FFFDF7,var(--or-pale));padding:20px 18px;text-align:center;margin-top:16px}
+  .carte-abonnement .ab-titre{font-family:'Cinzel Decorative',serif;font-size:15px;color:var(--royal);letter-spacing:.03em}
+  .carte-abonnement .ab-texte{font-style:italic;color:var(--brun);font-size:14.5px;margin-top:8px;line-height:1.45}
+  .ab-choix{display:flex;gap:10px;margin-top:16px}
+  .ab-option{flex:1;border:2px solid var(--or-pale);background:#FFFDF7;border-radius:12px;padding:14px 8px;cursor:pointer}
+  .ab-option.choisi{border-color:var(--or);background:linear-gradient(160deg,#FFFDF7,var(--or-pale))}
+  .ab-option .ab-prix{font-family:'Cinzel Decorative',serif;font-size:19px;color:var(--royal)}
+  .ab-option .ab-periode{font-style:italic;color:var(--brun);font-size:13px;margin-top:2px}
+
+  .paywall{border:1px solid var(--or);border-radius:16px;background:linear-gradient(165deg,#FFFDF7,var(--ivoire-fonce));padding:28px 22px;text-align:center;margin-top:10px}
+  .zone-payante{display:none}
+  .paywall .pw-icone{font-size:32px}
+  .paywall .pw-titre{font-family:'Cinzel Decorative',serif;font-size:16px;color:var(--royal);margin-top:10px}
+  .paywall .pw-texte{font-style:italic;color:var(--brun);font-size:15px;margin-top:8px;line-height:1.5}
+  .paywall .bouton-or{max-width:260px;margin-left:auto;margin-right:auto}
+
   .carte-parrainage{border:1px solid var(--or);border-radius:16px;background:radial-gradient(circle at 50% 0%,#2b3d84,var(--royal));color:#F7EFD8;padding:20px 18px;text-align:center;margin-top:16px}
   .carte-parrainage .cp-titre{font-family:'Cinzel Decorative',serif;font-size:13px;letter-spacing:.1em;color:var(--or-clair);text-transform:uppercase}
   .carte-parrainage .cp-compteur{font-family:'Cinzel Decorative',serif;font-size:32px;margin-top:10px}
@@ -268,6 +285,17 @@
   .cp-recompense.verrouille{opacity:.55}
   .cp-code-promo{font-family:'Cinzel Decorative',serif;font-size:22px;letter-spacing:.08em;color:var(--or-clair);margin-top:8px}
   .cp-statut-copie{font-size:12.5px;font-style:italic;margin-top:8px;min-height:16px;opacity:.85}
+  .creneau-carte{border:1px solid var(--or-pale);border-left:4px solid var(--or);border-radius:12px;background:#FFFDF7;padding:14px 16px;margin-bottom:11px}
+  .creneau-service{font-family:'Cinzel Decorative',serif;font-size:15.5px;color:var(--royal)}
+  .creneau-date{font-style:italic;color:var(--brun);font-size:14.5px;margin-top:3px;text-transform:capitalize}
+  .creneau-prix{font-family:'Cinzel Decorative',serif;font-size:18px;color:var(--encre);margin-top:8px}
+  .creneau-boutons{display:flex;gap:8px;margin-top:10px}
+  .creneau-boutons button{flex:1;font-family:'Cormorant Garamond',serif;font-size:15px;border-radius:10px;padding:10px;cursor:pointer}
+  .creneau-btn-reserver{background:linear-gradient(180deg,var(--or-clair),var(--or));border:none;color:var(--ivoire);font-weight:600}
+  .creneau-btn-supprimer{background:none;border:1px solid rgba(181,72,58,.35);color:var(--terre)}
+  .banniere-succes{background:rgba(62,142,90,.15);color:#2b5e3d;border-radius:12px;padding:14px;text-align:center;font-style:italic;margin-bottom:16px}
+  .banniere-annule{background:rgba(181,72,58,.12);color:var(--terre);border-radius:12px;padding:14px;text-align:center;font-style:italic;margin-bottom:16px}
+
   .badge-carte{border:1px solid var(--or-pale);border-radius:14px;background:#FFFDF7;padding:14px 8px;text-align:center}
   .badge-carte.debloque{background:linear-gradient(160deg,#FFFDF7,var(--or-pale));border-color:var(--or)}
   .badge-carte.verrouille{opacity:.4}
@@ -331,6 +359,41 @@
   .rituel li::before{content:counter(r);position:absolute;left:0;top:6px;width:22px;height:22px;border-radius:50%;background:var(--or-pale);color:var(--brun);font-family:'Cinzel Decorative',serif;font-size:12px;display:flex;align-items:center;justify-content:center}
   .m-liste{margin-top:18px}
   .m-carte{border:1px solid var(--or-pale);border-radius:12px;background:#FFFDF7;padding:14px 15px;margin-bottom:11px}
+  .m-carte.m-verrouille{opacity:.55;background:var(--ivoire-fonce)}
+
+  /* TANIKA WORLD */
+  .world-post{border:1px solid var(--or-pale);border-left:4px solid var(--royal);border-radius:12px;background:#FFFDF7;padding:15px 16px;margin-bottom:12px}
+  .wp-titre{font-family:'Cinzel Decorative',serif;font-size:16px;color:var(--royal)}
+  .wp-meta{font-style:italic;color:var(--brun);font-size:13px;margin-top:3px}
+  .wp-contenu{font-size:16px;line-height:1.5;margin-top:8px}
+  .wp-suppr{float:right;background:none;border:none;color:var(--brun);opacity:.5;font-size:14px;cursor:pointer}
+  .wp-reponses{margin-top:12px;padding-top:12px;border-top:1px solid var(--or-pale)}
+  .wp-reponse{background:var(--ivoire-fonce);border-radius:10px;padding:9px 12px;margin-bottom:8px;font-size:15px;position:relative}
+  .wp-reponse .r-auteur{font-family:'Cinzel Decorative',serif;font-size:11px;color:var(--or);text-transform:uppercase;letter-spacing:.05em}
+  .wp-reponse .r-date{font-style:italic;color:var(--brun);font-size:11.5px;margin-left:8px}
+  .wp-reponse .r-suppr{position:absolute;top:8px;right:10px;background:none;border:none;color:var(--brun);opacity:.5;font-size:12px;cursor:pointer}
+  .wp-form-reponse{display:flex;gap:8px;margin-top:10px}
+  .wp-form-reponse input{flex:1;border:1px solid var(--or-pale);border-radius:20px;padding:9px 14px;font-family:'Cormorant Garamond',serif;font-size:15px}
+  .wp-form-reponse button{background:var(--or);color:var(--ivoire);border:none;border-radius:20px;padding:9px 16px;font-size:14px;cursor:pointer}
+  .wp-connexion-requise{font-style:italic;color:var(--brun);font-size:14px;margin-top:8px}
+
+  .astuce-carte{border:1px solid var(--or);border-radius:12px;background:linear-gradient(160deg,#FFFDF7,var(--or-pale));padding:15px 16px;margin-bottom:12px}
+  .as-titre{font-family:'Cinzel Decorative',serif;font-size:15.5px;color:var(--royal)}
+  .as-contenu{font-size:15.5px;line-height:1.5;margin-top:8px}
+  .as-suppr{float:right;background:none;border:none;color:var(--brun);opacity:.5;font-size:14px;cursor:pointer}
+
+  .atelier-carte{border:1px solid var(--or-pale);border-left:4px solid var(--vert);border-radius:12px;background:#FFFDF7;padding:15px 16px;margin-bottom:12px}
+  .at-titre{font-family:'Cinzel Decorative',serif;font-size:15.5px;color:var(--royal)}
+  .at-date{font-style:italic;color:var(--brun);font-size:14px;margin-top:4px;text-transform:capitalize}
+  .at-desc{font-size:15px;margin-top:8px;line-height:1.4}
+  .at-lien{display:inline-block;margin-top:10px;color:var(--royal);font-family:'Cinzel Decorative',serif;font-size:12.5px;letter-spacing:.05em;text-decoration:underline}
+  .at-suppr{float:right;background:none;border:none;color:var(--brun);opacity:.5;font-size:14px;cursor:pointer}
+  .atelier-carte.atelier-teaser{background:var(--ivoire-fonce);border-left-color:var(--or)}
+  .at-badge-avp{display:inline-block;font-family:'Cinzel Decorative',serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--or);background:rgba(201,162,39,.15);padding:3px 10px;border-radius:20px;margin-bottom:6px}
+  .at-places-restantes{display:block;font-style:italic;color:var(--vert);font-size:14px;margin-top:5px}
+  .at-complet{display:inline-block;font-family:'Cinzel Decorative',serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--terre);background:rgba(181,72,58,.12);padding:3px 10px;border-radius:20px;margin-top:6px}
+  .at-btn-reserver{display:block;width:100%;margin-top:12px;background:linear-gradient(180deg,var(--or-clair),var(--or));border:none;color:var(--ivoire);font-family:'Cormorant Garamond',serif;font-weight:600;font-size:15px;padding:11px;border-radius:10px;cursor:pointer}
+  .at-inscrite{text-align:center;font-family:'Cinzel Decorative',serif;font-size:12px;letter-spacing:.06em;color:var(--vert);background:#E1EEE1;padding:9px;border-radius:10px;margin-top:12px}
   .m-carte .theme{font-family:'Cinzel Decorative',serif;font-size:10px;letter-spacing:.12em;color:var(--or);text-transform:uppercase}
   .m-carte .txt{font-style:italic;font-size:17px;margin-top:5px;line-height:1.4}
 
@@ -595,6 +658,29 @@
           </div>
         </div>
 
+        <div class="carte-abonnement" id="carte-abonnement">
+          <div id="abo-non-abonnee">
+            <div class="ab-titre">✦ Débloque l'Olfactothèque en entier ✦</div>
+            <p class="ab-texte">Le Scan, ton Journal, ta Bibliothèque, les Articles et tes Badges — tout devient accessible avec l'abonnement.</p>
+            <div class="ab-choix">
+              <button type="button" class="ab-option" id="ab-choix-mensuel">
+                <div class="ab-prix">19,99 €</div>
+                <div class="ab-periode">par mois</div>
+              </button>
+              <button type="button" class="ab-option" id="ab-choix-annuel">
+                <div class="ab-prix">88 €</div>
+                <div class="ab-periode">par an</div>
+              </button>
+            </div>
+            <button type="button" class="bouton-or" id="btn-sabonner" style="margin-top:14px">S'abonner</button>
+            <p class="upload-statut" id="statut-abonnement" style="text-align:center"></p>
+          </div>
+          <div id="abo-abonnee" style="display:none">
+            <div class="ab-titre">✦ Abonnée ✦</div>
+            <p class="ab-texte" id="ab-texte-actif">Tu as accès à toute l'Olfactothèque.</p>
+          </div>
+        </div>
+
         <div class="carte-parrainage">
           <div class="cp-titre">✦ Parraine une amie ✦</div>
           <div class="cp-compteur" id="cp-compteur">0</div>
@@ -612,6 +698,13 @@
           </div>
         </div>
 
+      <div class="paywall" id="paywall-espace">
+        <div class="pw-icone">🔒</div>
+        <div class="pw-titre">Réservé aux abonnées</div>
+        <p class="pw-texte">Ton Journal, tes Badges et ta Bibliothèque font partie de l'abonnement — vois l'offre juste au-dessus ✦</p>
+      </div>
+
+      <div class="zone-payante" id="zone-payante-espace">
       <label for="j-parfum">Parfum du jour</label>
       <input type="text" id="j-parfum" placeholder="Ex. : Libre · YSL">
       <label for="j-intention">Intention posée</label>
@@ -635,6 +728,7 @@
       <button class="bouton-or bouton-ligne" id="btn-comparer" style="display:none">Comparer les 2 parfums sélectionnés</button>
       <div class="comparaison" id="zone-comparaison"></div>
       </div>
+      </div>
 
       <p class="pied-signature">✦ <span class="or">Tanika Parfums</span> · par Nossane ✦</p>
     </div>
@@ -644,7 +738,16 @@
       <h2>Les Articles</h2>
       <p class="invocation">Guidance, notes olfactives et vertus vibratoires, par Nossane, pour Tanika.</p>
 
+      <div class="paywall" id="paywall-articles">
+        <div class="pw-icone">🔒</div>
+        <div class="pw-titre">Réservé aux abonnées</div>
+        <p class="pw-texte">Les Articles font partie des fonctionnalités de l'abonnement.</p>
+        <button class="bouton-or" onclick="aller('journal')">Voir l'abonnement</button>
+      </div>
+
+      <div class="zone-payante" id="zone-payante-articles">
       <div id="liste-articles"></div>
+      </div>
 
       <details class="creatrice">
         <summary>✦ Espace créatrice <span class="badge-verrouille" id="badge-articles">🔒</span> ✦</summary>
@@ -711,6 +814,90 @@
       <p class="pied-signature">✦ <span class="or">Tanika Parfums</span> · une création de Nossane ✦</p>
     </div>
 
+    <!-- ======= TANIKA WORLD ======= -->
+    <div class="ecran" id="world">
+      <h2>Tanika World</h2>
+      <p class="invocation">L'espace d'échange de la communauté ✦ ouvert à toutes.</p>
+
+      <div class="separateur-titre">✦ Discussions ✦</div>
+      <div id="liste-world-posts"></div>
+
+      <details class="creatrice">
+        <summary>✦ Espace créatrice <span class="badge-verrouille" id="badge-world">🔒</span> ✦</summary>
+        <div class="verrou" id="verrou-world">
+          <div class="ico-v">🔒</div>
+          <p>Cet espace est réservé à Nossane.<br>Connecte-toi avec ton compte administrateur.</p>
+        </div>
+        <div class="zone-creatrice" id="zone-world">
+          <p class="note-part">Lance un nouveau sujet de discussion pour la communauté.</p>
+          <label for="wp-titre">Titre du sujet</label>
+          <input type="text" id="wp-titre" placeholder="Ex. : Quel parfum portez-vous cette semaine ?">
+          <label for="wp-contenu">Message</label>
+          <textarea id="wp-contenu" placeholder="Lance la discussion…"></textarea>
+          <button type="button" class="bouton-or" id="btn-publier-world">Publier le sujet</button>
+          <p class="upload-statut" id="statut-world"></p>
+        </div>
+      </details>
+
+      <div class="separateur-titre">✦ Astuces Abonnées ✦</div>
+      <div class="paywall" id="paywall-astuces">
+        <div class="pw-icone">🔒</div>
+        <div class="pw-titre">Réservé aux abonnées</div>
+        <p class="pw-texte">Mes astuces sur le parfum énergétique, réservées à mes abonnées.</p>
+        <button class="bouton-or" onclick="aller('journal')">Voir l'abonnement</button>
+      </div>
+      <div class="zone-payante" id="zone-payante-astuces">
+        <div id="liste-astuces"></div>
+      </div>
+
+      <details class="creatrice">
+        <summary>✦ Publier une astuce <span class="badge-verrouille" id="badge-astuces">🔒</span> ✦</summary>
+        <div class="verrou" id="verrou-astuces">
+          <div class="ico-v">🔒</div>
+          <p>Réservé à Nossane. Connecte-toi avec ton compte administrateur.</p>
+        </div>
+        <div class="zone-creatrice" id="zone-astuces">
+          <label for="as-titre">Titre de l'astuce</label>
+          <input type="text" id="as-titre" placeholder="Ex. : Comment faire tenir un parfum plus longtemps">
+          <label for="as-contenu">Contenu</label>
+          <textarea id="as-contenu" placeholder="Ton astuce, ton conseil…"></textarea>
+          <button type="button" class="bouton-or" id="btn-publier-astuce">Publier l'astuce</button>
+          <p class="upload-statut" id="statut-astuce"></p>
+        </div>
+      </details>
+
+      <div class="separateur-titre">✦ Ateliers à Venir ✦</div>
+      <div id="liste-ateliers"></div>
+
+      <details class="creatrice">
+        <summary>✦ Ajouter un atelier <span class="badge-verrouille" id="badge-ateliers">🔒</span> ✦</summary>
+        <div class="verrou" id="verrou-ateliers">
+          <div class="ico-v">🔒</div>
+          <p>Réservé à Nossane. Connecte-toi avec ton compte administrateur.</p>
+        </div>
+        <div class="zone-creatrice" id="zone-ateliers">
+          <label for="at-titre">Titre de l'atelier</label>
+          <input type="text" id="at-titre" placeholder="Ex. : Atelier composition de parfum">
+          <label for="at-description">Description (facultatif)</label>
+          <textarea id="at-description"></textarea>
+          <label for="at-date-heure">Date et heure</label>
+          <input type="datetime-local" id="at-date-heure">
+          <label for="at-lien">Lien d'inscription (facultatif)</label>
+          <input type="text" id="at-lien" placeholder="https://…">
+          <label for="at-ouverture">Avant-première abonnées jusqu'au (facultatif — laisse vide pour ouvrir à toutes tout de suite)</label>
+          <input type="datetime-local" id="at-ouverture">
+          <label for="at-prix">Prix de la place (€)</label>
+          <input type="number" id="at-prix" step="0.01" placeholder="Ex. : 45.00">
+          <label for="at-places">Nombre de places</label>
+          <input type="number" id="at-places" placeholder="Ex. : 12">
+          <button type="button" class="bouton-or" id="btn-ajouter-atelier">Ajouter l'atelier</button>
+          <p class="upload-statut" id="statut-atelier"></p>
+        </div>
+      </details>
+
+      <p class="pied-signature">✦ <span class="or">Tanika Parfums</span> · une création de Nossane ✦</p>
+    </div>
+
   </div>
 
   <button class="bulle-chat" id="btn-ouvrir-chat" aria-label="Ouvrir le chat">✦</button>
@@ -750,6 +937,7 @@
     <button class="onglet" data-cible="journal"><span class="ico">✨</span><span class="lib">Espace</span></button>
     <button class="onglet" data-cible="articles"><span class="ico">📰</span><span class="lib">Articles</span></button>
     <button class="onglet" data-cible="mantras"><span class="ico">📿</span><span class="lib">Mantras</span></button>
+    <button class="onglet" data-cible="world"><span class="ico">🌍</span><span class="lib">World</span></button>
   </nav>
 </div>
 
@@ -867,36 +1055,59 @@ const REPERTOIRE_BASE = [
 ];
 
 const MANTRAS = [
-  {cle:"ancrage", theme:"Ancrage", txt:"« Je suis souveraine sur ma terre. Aucune tempête ne délogera ce qui est bâti en moi. »"},
-  {cle:"ancrage", theme:"Ancrage", txt:"« Mon trône est planté dans le réel. Je ne négocie pas ma stabilité. »"},
-  {cle:"amour", theme:"Amour", txt:"« Je règne sur mon propre cœur. Personne d'autre n'en détient les clés. »"},
-  {cle:"amour", theme:"Amour", txt:"« J'aime depuis un lieu de plénitude, jamais de manque. Mon amour ne se quémande pas. »"},
-  {cle:"confiance", theme:"Confiance", txt:"« Je ne demande pas la permission de rayonner. Mon éclat est un droit, pas une faveur. »"},
-  {cle:"confiance", theme:"Confiance", txt:"« J'entre dans chaque pièce en souveraine. Ma présence seule fait autorité. »"},
-  {cle:"expression", theme:"Parole", txt:"« Ma voix est loi. Je la pose avec certitude, jamais avec excuse. »"},
-  {cle:"expression", theme:"Parole", txt:"« Ce que je décrète aujourd'hui se manifeste. Mes mots ont du poids parce que je le décide. »"},
-  {cle:"intuition", theme:"Intuition", txt:"« Mon regard intérieur est ma couronne. Je sais, et je n'ai de comptes à rendre à personne. »"},
-  {cle:"clarte", theme:"Clarté", txt:"« Je vois avec la netteté d'une reine qui gouverne son royaume. Rien ne m'échappe. »"},
-  {cle:"creativite", theme:"Créativité", txt:"« Je crée parce que je suis souveraine de mon monde intérieur. Mon élan ne demande de compte à personne. »"},
-  {cle:"seduction", theme:"Séduction", txt:"« Ma sensualité est un territoire que je gouverne seule. J'y entre qui je veux, quand je veux. »"},
-  {cle:"confiance", theme:"Souveraineté", txt:"« Je n'ai rien à prouver. Je suis déjà l'autorité sur ma propre vie. »"},
-  {cle:"abondance", theme:"Abondance", txt:"« L'abondance est mon héritage naturel. Je la reçois en souveraine, sans me confondre en gratitude excessive. »"},
-  {cle:"abondance", theme:"Abondance", txt:"« Je décrète l'abondance et je l'accueille sans résistance. Ce qui est à moi me revient. »"},
-  {cle:"protection", theme:"Protection", txt:"« Mon champ est une forteresse. Rien n'y entre sans mon autorisation. »"},
-  {cle:"guerison", theme:"Guérison", txt:"« Je reprends possession de chaque part de moi laissée en chemin. Je me guéris en maîtresse de mon histoire. »"},
-  {cle:"pardon", theme:"Pardon", txt:"« Je pardonne depuis ma souveraineté, pas depuis ma faiblesse. Ce poids ne siège plus sur mon trône. »"},
-  {cle:"lacherprise", theme:"Lâcher-prise", txt:"« Je gouverne ce qui m'appartient et je relâche le reste sans un regard en arrière. »"},
-  {cle:"sommeil", theme:"Sommeil", txt:"« Cette nuit m'appartient entièrement. Je me repose en souveraine, sans dette envers personne. »"},
-  {cle:"chance", theme:"Chance", txt:"« La fortune reconnaît sa reine. Les portes s'ouvrent parce que je marche en étant déjà arrivée. »"},
-  {cle:"spiritualite", theme:"Élévation", txt:"« Je m'élève parce que c'est mon rang. Le sacré ne circule pas en moi par hasard. »"},
-  {cle:"courage", theme:"Courage", txt:"« Je n'attends pas l'absence de peur pour avancer. Mon courage est un ordre que je me donne. »"},
-  {cle:"gratitude", theme:"Gratitude", txt:"« Je reconnais ce qui m'est dû et je l'honore. Ma gratitude est puissance, pas soumission. »"},
-  {cle:"purification", theme:"Purification", txt:"« Je décide de ce qui reste dans mon champ. Ce qui n'est plus digne de moi est banni. »"},
-  {cle:"repos", theme:"Repos", txt:"« Me reposer est un décret royal, pas une permission à obtenir. Je m'arrête parce que je le choisis. »"}
+  /* ✦ Mantras gratuits — un par intention, ton doux et accessible ✦ */
+  {cle:"ancrage", niveau:"gratuit", theme:"Ancrage", txt:"« Je suis stable et ancrée, ici et maintenant. »"},
+  {cle:"amour", niveau:"gratuit", theme:"Amour", txt:"« Mon cœur est ouvert à l'amour, en commençant par moi-même. »"},
+  {cle:"confiance", niveau:"gratuit", theme:"Confiance", txt:"« Je crois en moi et en mes capacités. »"},
+  {cle:"expression", niveau:"gratuit", theme:"Parole", txt:"« Je m'exprime avec calme et sincérité. »"},
+  {cle:"intuition", niveau:"gratuit", theme:"Intuition", txt:"« J'écoute doucement ce que mon intuition me souffle. »"},
+  {cle:"clarte", niveau:"gratuit", theme:"Clarté", txt:"« Mon esprit se clarifie, pas à pas. »"},
+  {cle:"creativite", niveau:"gratuit", theme:"Créativité", txt:"« Je laisse ma créativité s'exprimer librement. »"},
+  {cle:"seduction", niveau:"gratuit", theme:"Séduction", txt:"« Je m'accepte et je rayonne à ma façon. »"},
+  {cle:"abondance", niveau:"gratuit", theme:"Abondance", txt:"« J'accueille l'abondance avec gratitude. »"},
+  {cle:"protection", niveau:"gratuit", theme:"Protection", txt:"« Je me sens en sécurité et protégée. »"},
+  {cle:"guerison", niveau:"gratuit", theme:"Guérison", txt:"« Je prends soin de moi, doucement, jour après jour. »"},
+  {cle:"pardon", niveau:"gratuit", theme:"Pardon", txt:"« Je m'autorise à lâcher ce qui pèse trop lourd. »"},
+  {cle:"lacherprise", niveau:"gratuit", theme:"Lâcher-prise", txt:"« Je relâche ce que je ne peux pas contrôler. »"},
+  {cle:"sommeil", niveau:"gratuit", theme:"Sommeil", txt:"« Je m'apaise et j'accueille un repos réparateur. »"},
+  {cle:"chance", niveau:"gratuit", theme:"Chance", txt:"« Je reste ouverte aux belles opportunités. »"},
+  {cle:"spiritualite", niveau:"gratuit", theme:"Élévation", txt:"« Je me connecte doucement à ce qui me dépasse. »"},
+  {cle:"courage", niveau:"gratuit", theme:"Courage", txt:"« J'avance un pas à la fois, avec courage. »"},
+  {cle:"gratitude", niveau:"gratuit", theme:"Gratitude", txt:"« Je remercie pour ce que j'ai déjà. »"},
+  {cle:"purification", niveau:"gratuit", theme:"Purification", txt:"« Je fais de la place pour du nouveau. »"},
+  {cle:"repos", niveau:"gratuit", theme:"Repos", txt:"« Je m'autorise à ralentir aujourd'hui. »"},
+
+  /* ✦ Mantras premium — plus puissants, plus tranchants, réservés aux abonnées ✦ */
+  {cle:"ancrage", niveau:"premium", theme:"Ancrage", txt:"« Je suis souveraine sur ma terre. Aucune tempête ne délogera ce qui est bâti en moi. »"},
+  {cle:"ancrage", niveau:"premium", theme:"Ancrage", txt:"« Mon trône est planté dans le réel. Je ne négocie pas ma stabilité. »"},
+  {cle:"amour", niveau:"premium", theme:"Amour", txt:"« Je règne sur mon propre cœur. Personne d'autre n'en détient les clés. »"},
+  {cle:"amour", niveau:"premium", theme:"Amour", txt:"« J'aime depuis un lieu de plénitude, jamais de manque. Mon amour ne se quémande pas. »"},
+  {cle:"confiance", niveau:"premium", theme:"Confiance", txt:"« Je ne demande pas la permission de rayonner. Mon éclat est un droit, pas une faveur. »"},
+  {cle:"confiance", niveau:"premium", theme:"Confiance", txt:"« J'entre dans chaque pièce en souveraine. Ma présence seule fait autorité. »"},
+  {cle:"expression", niveau:"premium", theme:"Parole", txt:"« Ma voix est loi. Je la pose avec certitude, jamais avec excuse. »"},
+  {cle:"expression", niveau:"premium", theme:"Parole", txt:"« Ce que je décrète aujourd'hui se manifeste. Mes mots ont du poids parce que je le décide. »"},
+  {cle:"intuition", niveau:"premium", theme:"Intuition", txt:"« Mon regard intérieur est ma couronne. Je sais, et je n'ai de comptes à rendre à personne. »"},
+  {cle:"clarte", niveau:"premium", theme:"Clarté", txt:"« Je vois avec la netteté d'une reine qui gouverne son royaume. Rien ne m'échappe. »"},
+  {cle:"creativite", niveau:"premium", theme:"Créativité", txt:"« Je crée parce que je suis souveraine de mon monde intérieur. Mon élan ne demande de compte à personne. »"},
+  {cle:"seduction", niveau:"premium", theme:"Séduction", txt:"« Ma sensualité est un territoire que je gouverne seule. J'y entre qui je veux, quand je veux. »"},
+  {cle:"confiance", niveau:"premium", theme:"Souveraineté", txt:"« Je n'ai rien à prouver. Je suis déjà l'autorité sur ma propre vie. »"},
+  {cle:"abondance", niveau:"premium", theme:"Abondance", txt:"« L'abondance est mon héritage naturel. Je la reçois en souveraine, sans me confondre en gratitude excessive. »"},
+  {cle:"abondance", niveau:"premium", theme:"Abondance", txt:"« Je décrète l'abondance et je l'accueille sans résistance. Ce qui est à moi me revient. »"},
+  {cle:"protection", niveau:"premium", theme:"Protection", txt:"« Mon champ est une forteresse. Rien n'y entre sans mon autorisation. »"},
+  {cle:"guerison", niveau:"premium", theme:"Guérison", txt:"« Je reprends possession de chaque part de moi laissée en chemin. Je me guéris en maîtresse de mon histoire. »"},
+  {cle:"pardon", niveau:"premium", theme:"Pardon", txt:"« Je pardonne depuis ma souveraineté, pas depuis ma faiblesse. Ce poids ne siège plus sur mon trône. »"},
+  {cle:"lacherprise", niveau:"premium", theme:"Lâcher-prise", txt:"« Je gouverne ce qui m'appartient et je relâche le reste sans un regard en arrière. »"},
+  {cle:"sommeil", niveau:"premium", theme:"Sommeil", txt:"« Cette nuit m'appartient entièrement. Je me repose en souveraine, sans dette envers personne. »"},
+  {cle:"chance", niveau:"premium", theme:"Chance", txt:"« La fortune reconnaît sa reine. Les portes s'ouvrent parce que je marche en étant déjà arrivée. »"},
+  {cle:"spiritualite", niveau:"premium", theme:"Élévation", txt:"« Je m'élève parce que c'est mon rang. Le sacré ne circule pas en moi par hasard. »"},
+  {cle:"courage", niveau:"premium", theme:"Courage", txt:"« Je n'attends pas l'absence de peur pour avancer. Mon courage est un ordre que je me donne. »"},
+  {cle:"gratitude", niveau:"premium", theme:"Gratitude", txt:"« Je reconnais ce qui m'est dû et je l'honore. Ma gratitude est puissance, pas soumission. »"},
+  {cle:"purification", niveau:"premium", theme:"Purification", txt:"« Je décide de ce qui reste dans mon champ. Ce qui n'est plus digne de moi est banni. »"},
+  {cle:"repos", niveau:"premium", theme:"Repos", txt:"« Me reposer est un décret royal, pas une permission à obtenir. Je m'arrête parce que je le choisis. »"}
 ];
 
 const $ = s => document.querySelector(s);
-const TITRES = {accueil:"TANIKA", scanner:"LE SCAN", classeur:"LE CLASSEUR", journal:"MON ESPACE", articles:"LES ARTICLES", mantras:"MANTRAS"};
+const TITRES = {accueil:"TANIKA", scanner:"LE SCAN", classeur:"LE CLASSEUR", journal:"MON ESPACE", articles:"LES ARTICLES", mantras:"MANTRAS", world:"TANIKA WORLD"};
 
 let sessionActuelle = null;
 let estAdmin = false;
@@ -919,6 +1130,8 @@ $('#btn-decouvrir-produits').addEventListener('click',()=>aller('scanner'));
 /* ============ DONNÉES (SUPABASE) ============ */
 let ajouts=[], entrees=[], articles=[], profil=null, bibliotheque=[];
 let likesTous=[], commentairesTous=[];
+let worldPosts=[], worldReponses=[], astuces=[], ateliers=[];
+let placesPrises={}, mesReservationsAteliers=[];
 
 async function chargerDonneesPubliques(){
   try{
@@ -937,20 +1150,43 @@ async function chargerDonneesPubliques(){
     const {data} = await supabaseClient.from('article_comments').select('*').order('created_at',{ascending:true});
     if(data) commentairesTous = data;
   }catch(e){ console.error('Chargement commentaires impossible', e); }
-  afficherClasseur(); afficherArticles();
+  try{
+    const {data} = await supabaseClient.from('world_posts').select('*').order('created_at',{ascending:false});
+    if(data) worldPosts = data;
+  }catch(e){ console.error('Chargement sujets World impossible', e); }
+  try{
+    const {data} = await supabaseClient.from('world_reponses').select('*').order('created_at',{ascending:true});
+    if(data) worldReponses = data;
+  }catch(e){ console.error('Chargement réponses World impossible', e); }
+  try{
+    const {data} = await supabaseClient.from('world_astuces').select('*').order('created_at',{ascending:false});
+    astuces = data || [];
+  }catch(e){ astuces = []; }
+  try{
+    const {data} = await supabaseClient.from('ateliers').select('*').order('date_heure',{ascending:true});
+    if(data) ateliers = data;
+  }catch(e){ console.error('Chargement ateliers impossible', e); }
+  try{
+    const {data} = await supabaseClient.from('atelier_places_prises').select('*');
+    placesPrises = {};
+    if(data) data.forEach(p=>{ placesPrises[p.atelier_id] = p.places_prises; });
+  }catch(e){ console.error('Chargement places prises impossible', e); }
+  afficherClasseur(); afficherArticles(); afficherWorldPosts(); afficherAstuces(); afficherAteliers();
 }
 
 async function chargerDonneesPersonnelles(){
-  if(!sessionActuelle){ entrees=[]; bibliotheque=[]; profil=null; afficherEntrees(); afficherBibliotheque(); afficherBadges(); return; }
+  if(!sessionActuelle){ entrees=[]; bibliotheque=[]; profil=null; afficherEntrees(); afficherBibliotheque(); afficherBadges(); appliquerPaywall(); return; }
   const uid = sessionActuelle.user.id;
   try{
     const {data:prof} = await supabaseClient.from('profiles').select('*').eq('id',uid).single();
     if(prof){
-      profil={prenom:prof.prenom, code_parrainage:prof.code_parrainage};
+      profil={prenom:prof.prenom, code_parrainage:prof.code_parrainage, abonnement_actif:!!prof.abonnement_actif, abonnement_periode:prof.abonnement_periode};
       estAdmin = !!prof.is_admin;
       if(codeParrainageURL && !prof.parraine_par) await lierAuParrain(uid);
     }
   }catch(e){ console.error('Chargement profil impossible', e); }
+  appliquerPaywall();
+  afficherAbonnement();
   try{
     const {data} = await supabaseClient.from('journal').select('*').eq('user_id',uid).order('created_at',{ascending:false});
     if(data) entrees = data.map(e=>({date:e.created_at, parfum:e.parfum, intention:e.intention, ressenti:e.ressenti, energie:e.energie, id:e.id}));
@@ -959,7 +1195,11 @@ async function chargerDonneesPersonnelles(){
     const {data} = await supabaseClient.from('scans').select('*').eq('user_id',uid).order('created_at',{ascending:false});
     if(data) bibliotheque = data.map(s=>({nom:s.nom, marque:s.marque, bovis:s.bovis, chakra:s.chakra, intention:s.intention, date:s.created_at, id:s.id}));
   }catch(e){ console.error('Chargement bibliothèque impossible', e); }
-  afficherProfil(); afficherEntrees(); afficherBibliotheque(); afficherBadges(); afficherParrainage(); mettreAJourEspacesCreatrice();
+  try{
+    const {data} = await supabaseClient.from('atelier_reservations').select('atelier_id').eq('user_id',uid);
+    mesReservationsAteliers = data ? data.map(r=>r.atelier_id) : [];
+  }catch(e){ console.error('Chargement réservations ateliers impossible', e); mesReservationsAteliers = []; }
+  afficherProfil(); afficherEntrees(); afficherBibliotheque(); afficherBadges(); afficherParrainage(); afficherAteliers(); mettreAJourEspacesCreatrice();
 }
 
 function mettreAJourEspacesCreatrice(){
@@ -968,6 +1208,7 @@ function mettreAJourEspacesCreatrice(){
   document.querySelectorAll('.badge-verrouille').forEach(b=>b.textContent = estAdmin ? '🔓' : '🔒');
   afficherArticles(); // pour afficher/masquer les boutons supprimer
   afficherClasseur($('#filtre') ? $('#filtre').value : ''); // pour afficher/masquer les boutons modifier/supprimer
+  afficherWorldPosts(); afficherAstuces(); afficherAteliers();
 }
 
 async function verifierSession(){
@@ -1179,11 +1420,16 @@ function afficherClasseur(filtre=''){
   if(!liste.length){ zone.innerHTML='<p class="vide">Aucun parfum ne correspond. ✦</p>'; return; }
   zone.innerHTML = liste.map((p,i)=>{
     const v=vibe(p.bovis), ch=CHAKRAS[p.chakra]||CHAKRAS[3];
+    const abonnee = estAbonnee();
     const actionsAdmin = (estAdmin && p.id) ? `
       <div class="p-actions-admin">
         <button type="button" class="p-btn-modifier" data-i="${i}">✏️ Modifier</button>
         <button type="button" class="p-btn-supprimer" data-i="${i}">🗑️ Supprimer</button>
       </div>` : '';
+    const detailVertus = abonnee
+      ? `<div class="l"><b>Résonance :</b> chakra ${ch.nom}</div>
+         ${p.pourquoi?`<div class="l">${p.pourquoi}</div>`:''}`
+      : `<div class="l l-verrouille">🔒 Chakra & vertus réservés aux abonnées</div>`;
     return `<div class="parfum" data-i="${i}">
       <div class="p-tete">
         ${p.image_url?`<img class="p-image" src="${p.image_url}" alt="${p.nom}">`:''}
@@ -1193,8 +1439,7 @@ function afficherClasseur(filtre=''){
       </div>
       <div class="p-detail">
         ${p.famille?`<div class="l"><b>Famille :</b> ${p.famille}</div>`:''}
-        <div class="l"><b>Résonance :</b> chakra ${ch.nom}</div>
-        ${p.pourquoi?`<div class="l">${p.pourquoi}</div>`:''}
+        ${detailVertus}
         ${actionsAdmin}
       </div>
     </div>`;
@@ -1585,6 +1830,98 @@ async function lierAuParrain(nouvelUtilisateurId){
     }
   }catch(e){ console.error('Liaison parrainage impossible', e); }
 }
+
+/* ============ ABONNEMENT ============ */
+function estAbonnee(){
+  return estAdmin || (profil && profil.abonnement_actif);
+}
+function appliquerPaywall(){
+  const acces = estAbonnee();
+  document.querySelectorAll('.zone-payante').forEach(z => z.style.display = acces ? 'block' : 'none');
+  document.querySelectorAll('.paywall').forEach(p => p.style.display = acces ? 'none' : 'block');
+  if(typeof afficherListeMantras === 'function') afficherListeMantras();
+  if(typeof afficherIntentionDuJour === 'function') afficherIntentionDuJour();
+  if(typeof afficherClasseur === 'function') afficherClasseur($('#filtre') ? $('#filtre').value : '');
+  rafraichirAstuces();
+  if(typeof afficherAteliers === 'function') afficherAteliers();
+}
+
+async function rafraichirAstuces(){
+  try{
+    const {data} = await supabaseClient.from('world_astuces').select('*').order('created_at',{ascending:false});
+    astuces = data || [];
+  }catch(e){ astuces = []; }
+  if(typeof afficherAstuces === 'function') afficherAstuces();
+}
+
+function afficherAbonnement(){
+  const carte = $('#carte-abonnement');
+  if(!carte) return;
+  if(!sessionActuelle || !profil){ carte.style.display='none'; return; }
+  carte.style.display='block';
+  const abonnee = profil.abonnement_actif;
+  $('#abo-non-abonnee').style.display = abonnee ? 'none' : 'block';
+  $('#abo-abonnee').style.display = abonnee ? 'block' : 'none';
+  if(abonnee){
+    $('#ab-texte-actif').textContent = profil.abonnement_periode === 'annuel'
+      ? 'Tu as accès à toute l\'Olfactothèque — abonnement annuel.'
+      : 'Tu as accès à toute l\'Olfactothèque — abonnement mensuel.';
+  }
+}
+
+let periodeChoisie = 'mensuel';
+$('#ab-choix-mensuel').addEventListener('click',()=>{
+  periodeChoisie = 'mensuel';
+  $('#ab-choix-mensuel').classList.add('choisi');
+  $('#ab-choix-annuel').classList.remove('choisi');
+});
+$('#ab-choix-annuel').addEventListener('click',()=>{
+  periodeChoisie = 'annuel';
+  $('#ab-choix-annuel').classList.add('choisi');
+  $('#ab-choix-mensuel').classList.remove('choisi');
+});
+$('#ab-choix-mensuel').classList.add('choisi');
+
+$('#btn-sabonner').addEventListener('click', async()=>{
+  if(!sessionActuelle) return;
+  $('#btn-sabonner').textContent = 'Redirection…';
+  try{
+    const reponse = await fetch('/.netlify/functions/creer-abonnement', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        user_id: sessionActuelle.user.id,
+        email: sessionActuelle.user.email,
+        periode: periodeChoisie
+      })
+    });
+    const donnees = await reponse.json();
+    if(!reponse.ok || !donnees.url){
+      $('#statut-abonnement').textContent = donnees.error || 'Impossible de démarrer l\'abonnement pour le moment.';
+      $('#btn-sabonner').textContent = "S'abonner";
+      return;
+    }
+    window.location.href = donnees.url;
+  }catch(e){
+    console.error('Abonnement impossible', e);
+    $('#statut-abonnement').textContent = 'Une erreur est survenue. Réessaie dans un instant.';
+    $('#btn-sabonner').textContent = "S'abonner";
+  }
+});
+
+/* Message après retour de Stripe pour l'abonnement */
+(function afficherBanniereAbonnement(){
+  try{
+    const parametres = new URLSearchParams(window.location.search);
+    const statut = parametres.get('abonnement');
+    if(statut === 'succes'){
+      alert('✦ Abonnement activé ! Toute l\'Olfactothèque est maintenant accessible. ✦');
+    } else if(statut === 'annule'){
+      alert('Abonnement annulé — tu peux réessayer quand tu veux depuis Mon Espace.');
+    }
+  }catch(e){}
+})();
+
 function majBoutonComparer(){
   const coches = [...document.querySelectorAll('.bib-check:checked')];
   $('#btn-comparer').style.display = coches.length===2 ? 'block' : 'none';
@@ -1818,18 +2155,36 @@ $('#btn-publier').addEventListener('click',async()=>{
 
 /* ============ MANTRAS ============ */
 function mantraAleatoire(){
-  const m=MANTRAS[Math.floor(Math.random()*MANTRAS.length)];
+  const reserve = estAbonnee() ? MANTRAS : MANTRAS.filter(m=>m.niveau==='gratuit');
+  const m = reserve[Math.floor(Math.random()*reserve.length)];
   $('#mantra-jour').innerHTML=`<div class="et">Mantra du jour</div><div class="txt">${m.txt}</div><div class="theme">✦ ${m.theme} ✦</div>`;
 }
 $('#btn-autre-mantra').addEventListener('click',mantraAleatoire);
 mantraAleatoire();
-$('#m-liste').innerHTML = MANTRAS.map(m=>`<div class="m-carte"><div class="theme">${m.theme}</div><div class="txt">${m.txt}</div></div>`).join('');
+
+function afficherListeMantras(){
+  const zone = $('#m-liste');
+  if(!zone) return;
+  const abonnee = estAbonnee();
+  zone.innerHTML = MANTRAS.map(m=>{
+    if(m.niveau==='premium' && !abonnee){
+      return `<div class="m-carte m-verrouille">
+        <div class="theme">${m.theme} ✦ réservé aux abonnées</div>
+        <div class="txt">🔒 Ce mantra plus puissant se débloque avec l'abonnement.</div>
+      </div>`;
+    }
+    return `<div class="m-carte"><div class="theme">${m.theme}</div><div class="txt">${m.txt}</div></div>`;
+  }).join('');
+}
+afficherListeMantras();
 
 /* Intention du jour : identique pour tout le monde le même jour, change chaque jour */
 function afficherIntentionDuJour(){
   const jourDeLAnnee = Math.floor((Date.now() - new Date(new Date().getFullYear(),0,0)) / 86400000);
   const intention = INTENTIONS[jourDeLAnnee % INTENTIONS.length];
-  const mantrasCorrespondants = MANTRAS.filter(m=>m.cle === intention.cle);
+  const niveauVoulu = estAbonnee() ? 'premium' : 'gratuit';
+  let mantrasCorrespondants = MANTRAS.filter(m=>m.cle === intention.cle && m.niveau===niveauVoulu);
+  if(!mantrasCorrespondants.length) mantrasCorrespondants = MANTRAS.filter(m=>m.cle === intention.cle);
   const mantra = mantrasCorrespondants.length
     ? mantrasCorrespondants[jourDeLAnnee % mantrasCorrespondants.length]
     : MANTRAS[jourDeLAnnee % MANTRAS.length];
@@ -1839,6 +2194,251 @@ function afficherIntentionDuJour(){
     <div class="idj-mantra">${mantra.txt}</div>`;
 }
 afficherIntentionDuJour();
+
+/* ============ TANIKA WORLD ============ */
+function formatDateWorld(iso){
+  try{ return new Date(iso).toLocaleDateString('fr-FR',{day:'numeric', month:'long', hour:'2-digit', minute:'2-digit'}); }
+  catch(e){ return iso; }
+}
+
+function afficherWorldPosts(){
+  const zone = $('#liste-world-posts');
+  if(!zone) return;
+  if(!worldPosts.length){
+    zone.innerHTML = '<p class="vide">Aucun sujet pour l\'instant. Nossane lance bientôt la discussion ✦</p>';
+    return;
+  }
+  const monId = sessionActuelle ? sessionActuelle.user.id : null;
+  zone.innerHTML = worldPosts.map(p=>{
+    const reponses = worldReponses.filter(r=>r.post_id===p.id);
+    return `<div class="world-post" data-id="${p.id}">
+      ${estAdmin?`<button type="button" class="wp-suppr" data-id="${p.id}">✕</button>`:''}
+      <div class="wp-titre">${p.titre}</div>
+      <div class="wp-meta">par Nossane · ${formatDateWorld(p.created_at)}</div>
+      <div class="wp-contenu">${p.contenu}</div>
+      <div class="wp-reponses">
+        ${reponses.map(r=>`
+          <div class="wp-reponse">
+            ${(monId===r.user_id||estAdmin)?`<button type="button" class="r-suppr" data-id="${r.id}">✕</button>`:''}
+            <span class="r-auteur">${r.prenom||'Une cliente'}</span><span class="r-date">${formatDateWorld(r.created_at)}</span>
+            <div>${r.texte}</div>
+          </div>`).join('') || ''}
+        ${sessionActuelle
+          ? `<div class="wp-form-reponse"><input type="text" placeholder="Répondre…" id="saisie-reponse-${p.id}"><button type="button" class="btn-envoyer-reponse" data-id="${p.id}">Envoyer</button></div>`
+          : `<p class="wp-connexion-requise">Connecte-toi dans l'onglet Espace pour participer.</p>`}
+      </div>
+    </div>`;
+  }).join('');
+  zone.querySelectorAll('.wp-suppr').forEach(b=>{
+    b.addEventListener('click',async()=>{
+      if(!confirm('Supprimer ce sujet et toutes ses réponses ?')) return;
+      await supabaseClient.from('world_posts').delete().eq('id', b.dataset.id);
+      await chargerDonneesPubliques();
+    });
+  });
+  zone.querySelectorAll('.r-suppr').forEach(b=>{
+    b.addEventListener('click',async()=>{
+      if(!confirm('Supprimer cette réponse ?')) return;
+      await supabaseClient.from('world_reponses').delete().eq('id', b.dataset.id);
+      await chargerDonneesPubliques();
+    });
+  });
+  zone.querySelectorAll('.btn-envoyer-reponse').forEach(b=>{
+    b.addEventListener('click',()=>publierReponseWorld(b.dataset.id));
+  });
+}
+
+async function publierReponseWorld(postId){
+  if(!sessionActuelle) return;
+  const champ = $('#saisie-reponse-'+postId);
+  const texte = champ.value.trim();
+  if(!texte) return;
+  const {error} = await supabaseClient.from('world_reponses').insert({
+    post_id: postId, user_id: sessionActuelle.user.id,
+    prenom: (profil && profil.prenom) ? profil.prenom : 'Une cliente',
+    texte
+  });
+  if(error){ console.error('Réponse impossible', error); return; }
+  await chargerDonneesPubliques();
+}
+
+$('#btn-publier-world').addEventListener('click', async()=>{
+  const titre = $('#wp-titre').value.trim();
+  const contenu = $('#wp-contenu').value.trim();
+  if(!titre){ $('#wp-titre').focus(); return; }
+  if(!contenu){ $('#wp-contenu').focus(); return; }
+  if(!sessionActuelle || !estAdmin) return;
+  const {error} = await supabaseClient.from('world_posts').insert({titre, contenu, created_by: sessionActuelle.user.id});
+  if(error){ $('#statut-world').textContent = 'Erreur : '+error.message; return; }
+  $('#wp-titre').value=''; $('#wp-contenu').value='';
+  $('#statut-world').textContent = '✦ Sujet publié ✦';
+  setTimeout(()=>$('#statut-world').textContent='', 2000);
+  await chargerDonneesPubliques();
+});
+
+function afficherAstuces(){
+  const zone = $('#liste-astuces');
+  if(!zone) return;
+  if(!astuces.length){
+    zone.innerHTML = '<p class="vide">Aucune astuce publiée pour l\'instant.</p>';
+    return;
+  }
+  zone.innerHTML = astuces.map(a=>`
+    <div class="astuce-carte" data-id="${a.id}">
+      ${estAdmin?`<button type="button" class="as-suppr" data-id="${a.id}">✕</button>`:''}
+      <div class="as-titre">${a.titre}</div>
+      <div class="as-contenu">${a.contenu}</div>
+    </div>`).join('');
+  zone.querySelectorAll('.as-suppr').forEach(b=>{
+    b.addEventListener('click',async()=>{
+      if(!confirm('Supprimer cette astuce ?')) return;
+      await supabaseClient.from('world_astuces').delete().eq('id', b.dataset.id);
+      await rafraichirAstuces();
+    });
+  });
+}
+
+$('#btn-publier-astuce').addEventListener('click', async()=>{
+  const titre = $('#as-titre').value.trim();
+  const contenu = $('#as-contenu').value.trim();
+  if(!titre){ $('#as-titre').focus(); return; }
+  if(!contenu){ $('#as-contenu').focus(); return; }
+  if(!sessionActuelle || !estAdmin) return;
+  const {error} = await supabaseClient.from('world_astuces').insert({titre, contenu, created_by: sessionActuelle.user.id});
+  if(error){ $('#statut-astuce').textContent = 'Erreur : '+error.message; return; }
+  $('#as-titre').value=''; $('#as-contenu').value='';
+  $('#statut-astuce').textContent = '✦ Astuce publiée ✦';
+  setTimeout(()=>$('#statut-astuce').textContent='', 2000);
+  await rafraichirAstuces();
+});
+
+function afficherAteliers(){
+  const zone = $('#liste-ateliers');
+  if(!zone) return;
+  const aVenir = ateliers.filter(a=>new Date(a.date_heure) > new Date());
+  if(!aVenir.length){
+    zone.innerHTML = '<p class="vide">Aucun atelier prévu pour l\'instant.</p>';
+    return;
+  }
+  const abonnee = estAbonnee();
+  zone.innerHTML = aVenir.map(a=>{
+    const enAvantPremiere = a.ouverture_publique && new Date(a.ouverture_publique) > new Date();
+    if(enAvantPremiere && !abonnee){
+      return `<div class="atelier-carte atelier-teaser" data-id="${a.id}">
+        ${estAdmin?`<button type="button" class="at-suppr" data-id="${a.id}">✕</button>`:''}
+        <div class="at-titre">🔒 ${a.titre}</div>
+        <div class="at-date">${formatDateWorld(a.date_heure)}</div>
+        <div class="at-desc">En avant-première pour les abonnées jusqu'au ${formatDateWorld(a.ouverture_publique)}. Abonne-toi pour voir les détails et t'inscrire en premier ✦</div>
+      </div>`;
+    }
+
+    const prises = placesPrises[a.id] || 0;
+    const complet = a.places_max != null && prises >= a.places_max;
+    const dejaInscrite = mesReservationsAteliers.includes(a.id);
+    const placesTxt = a.places_max != null
+      ? (complet ? '<span class="at-complet">Complet</span>' : `<span class="at-places-restantes">${a.places_max - prises} place${(a.places_max-prises)>1?'s':''} restante${(a.places_max-prises)>1?'s':''}</span>`)
+      : '';
+    const prixTxt = a.prix_centimes != null ? `${(a.prix_centimes/100).toLocaleString('fr-FR',{minimumFractionDigits:2})} €` : '';
+
+    let actionReservation;
+    if(dejaInscrite){
+      actionReservation = `<div class="at-inscrite">✦ Tu es inscrite ✦</div>`;
+    } else if(complet){
+      actionReservation = '';
+    } else if(a.prix_centimes != null){
+      actionReservation = `<button type="button" class="at-btn-reserver" data-id="${a.id}">Réserver ma place — ${prixTxt}</button>`;
+    } else {
+      actionReservation = '';
+    }
+
+    return `<div class="atelier-carte" data-id="${a.id}">
+      ${estAdmin?`<button type="button" class="at-suppr" data-id="${a.id}">✕</button>`:''}
+      ${enAvantPremiere?`<div class="at-badge-avp">✦ Avant-première abonnées ✦</div>`:''}
+      <div class="at-titre">${a.titre}</div>
+      <div class="at-date">${formatDateWorld(a.date_heure)}</div>
+      ${placesTxt}
+      ${a.description?`<div class="at-desc">${a.description}</div>`:''}
+      ${actionReservation}
+      ${a.lien?`<a class="at-lien" href="${a.lien}" target="_blank" rel="noopener">Plus d'informations</a>`:''}
+    </div>`;
+  }).join('');
+  zone.querySelectorAll('.at-suppr').forEach(b=>{
+    b.addEventListener('click',async(ev)=>{
+      ev.stopPropagation();
+      if(!confirm('Supprimer cet atelier ?')) return;
+      await supabaseClient.from('ateliers').delete().eq('id', b.dataset.id);
+      await chargerDonneesPubliques();
+    });
+  });
+  zone.querySelectorAll('.at-btn-reserver').forEach(b=>{
+    b.addEventListener('click',()=>reserverAtelier(b.dataset.id));
+  });
+}
+
+async function reserverAtelier(atelierId){
+  if(!sessionActuelle){ aller('journal'); return; }
+  const bouton = document.querySelector(`.at-btn-reserver[data-id="${atelierId}"]`);
+  if(bouton) bouton.textContent = 'Redirection…';
+  try{
+    const reponse = await fetch('/.netlify/functions/creer-reservation-atelier', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        atelier_id: atelierId,
+        user_id: sessionActuelle.user.id,
+        email: sessionActuelle.user.email
+      })
+    });
+    const donnees = await reponse.json();
+    if(!reponse.ok || !donnees.url){
+      alert(donnees.error || 'Impossible de créer le paiement pour le moment.');
+      await chargerDonneesPubliques();
+      return;
+    }
+    window.location.href = donnees.url;
+  }catch(e){
+    console.error('Réservation atelier impossible', e);
+    alert('Une erreur est survenue. Réessaie dans un instant.');
+    if(bouton) bouton.textContent = 'Réserver ma place';
+  }
+}
+
+/* Message après retour de Stripe pour une réservation d'atelier */
+(function afficherBanniereAtelier(){
+  try{
+    const parametres = new URLSearchParams(window.location.search);
+    const statut = parametres.get('atelier');
+    if(statut === 'succes'){
+      alert('✦ Réservation confirmée ! Tu es inscrite à l\'atelier. ✦');
+    } else if(statut === 'annule'){
+      alert('Paiement annulé — la place reste disponible si tu veux réessayer.');
+    }
+  }catch(e){}
+})();
+
+$('#btn-ajouter-atelier').addEventListener('click', async()=>{
+  const titre = $('#at-titre').value.trim();
+  const dateHeure = $('#at-date-heure').value;
+  if(!titre){ $('#at-titre').focus(); return; }
+  if(!dateHeure){ $('#at-date-heure').focus(); return; }
+  if(!sessionActuelle || !estAdmin) return;
+  const ouverturePublique = $('#at-ouverture').value;
+  const prix = $('#at-prix').value;
+  const places = $('#at-places').value;
+  const {error} = await supabaseClient.from('ateliers').insert({
+    titre, description: $('#at-description').value.trim(),
+    date_heure: new Date(dateHeure).toISOString(),
+    lien: $('#at-lien').value.trim() || null,
+    ouverture_publique: ouverturePublique ? new Date(ouverturePublique).toISOString() : null,
+    prix_centimes: prix ? Math.round(Number(prix)*100) : null,
+    places_max: places ? Number(places) : null
+  });
+  if(error){ $('#statut-atelier').textContent = 'Erreur : '+error.message; return; }
+  $('#at-titre').value=''; $('#at-description').value=''; $('#at-date-heure').value=''; $('#at-lien').value=''; $('#at-ouverture').value=''; $('#at-prix').value=''; $('#at-places').value='';
+  $('#statut-atelier').textContent = '✦ Atelier ajouté ✦';
+  setTimeout(()=>$('#statut-atelier').textContent='', 2000);
+  await chargerDonneesPubliques();
+});
 
 /* ============ NOTIFICATIONS PUSH ============ */
 function urlBase64ToUint8Array(base64String){
