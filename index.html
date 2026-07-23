@@ -51,7 +51,12 @@
   @media (prefers-reduced-motion:reduce){.mandala-bg{animation:none}*{transition:none!important;animation-duration:.01s!important}}
 
   #app{position:fixed;inset:0;display:flex;flex-direction:column;z-index:1}
-  .barre-haut{text-align:center;padding:calc(14px + env(safe-area-inset-top,0px)) 16px 10px;background:linear-gradient(180deg,var(--ivoire) 70%,transparent);z-index:5}
+  .barre-haut{text-align:center;padding:calc(14px + env(safe-area-inset-top,0px)) 16px 10px;background:linear-gradient(180deg,var(--ivoire) 70%,transparent);z-index:5;position:relative}
+  .btn-espace-header{position:absolute;top:calc(8px + env(safe-area-inset-top,0px));right:14px;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;cursor:pointer;z-index:6;padding:0}
+  .btn-espace-header .ico-espace{width:36px;height:36px;border-radius:50%;background:radial-gradient(circle,#27387A,var(--royal));border:1px solid var(--or-clair);color:var(--or-clair);font-size:16px;display:flex;align-items:center;justify-content:center}
+  .btn-espace-header .lib-espace{font-family:'Cinzel Decorative',serif;font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--brun);white-space:nowrap}
+  .btn-espace-header.actif .ico-espace{box-shadow:0 0 0 3px var(--or-pale)}
+  .btn-espace-header.actif .lib-espace{color:var(--royal)}
   .barre-haut .titre{font-family:'Cinzel Decorative',serif;font-size:16px;letter-spacing:.2em;color:var(--royal);font-weight:700}
   .barre-haut .souligne{width:52px;height:2px;margin:7px auto 0;background:linear-gradient(90deg,transparent,var(--or),transparent)}
 
@@ -208,6 +213,9 @@
   .creatrice summary::-webkit-details-marker{display:none}
   .creatrice[open] summary{margin-bottom:6px}
   .note-part{font-style:italic;color:var(--brun);font-size:14px;text-align:center;margin:8px 0 4px;line-height:1.4}
+  .bloc-suggestion{border:1px dashed var(--or);border-radius:12px;padding:14px;margin:16px 0;background:rgba(201,162,39,.06)}
+  .config-carte{display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid var(--or-pale);background:#FFFDF7;border-radius:10px;padding:9px 12px;margin-bottom:8px;font-size:15px}
+  .config-carte button{background:none;border:none;color:var(--brun);opacity:.5;font-size:13px;cursor:pointer;flex-shrink:0}
 
   /* VERROU CRÉATRICE */
   .verrou{text-align:center;padding:8px 2px}
@@ -476,6 +484,10 @@
 
 <div id="app">
   <div class="barre-haut">
+    <button class="btn-espace-header" id="btn-espace-header" data-cible="journal" aria-label="Mon Espace">
+      <span class="ico-espace">✨</span>
+      <span class="lib-espace">Mon Espace</span>
+    </button>
     <div class="titre" id="titre-haut">L'OLFACTOTHÈQUE</div>
     <div class="signature">Tanika Parfums · par Nossane</div>
     <div class="souligne"></div>
@@ -590,6 +602,16 @@
         </div>
         <label for="a-code">Code-barres (facultatif, pour le scan)</label>
         <input type="number" id="a-code" placeholder="Ex. : 3614273760980">
+
+        <div class="bloc-suggestion">
+          <label for="a-notes-suggestion">Notes / matières premières (pour suggestion chakra)</label>
+          <input type="text" id="a-notes-suggestion" placeholder="Ex. : santal, rose, bergamote (séparées par des virgules)">
+          <label for="a-palier-suggestion">Niveau de qualité (pour suggestion Bovis)</label>
+          <select id="a-palier-suggestion"><option value="">— Choisir un palier —</option></select>
+          <button type="button" class="bouton-or bouton-ligne" id="btn-suggerer">✨ Suggérer chakra et Bovis</button>
+          <p class="upload-statut" id="statut-suggestion"></p>
+        </div>
+
         <label for="a-bovis">Taux vibratoire (Bovis / U.B.)</label>
         <input type="number" id="a-bovis" placeholder="Ex. : 10800">
         <label for="a-famille">Famille olfactive</label>
@@ -614,6 +636,39 @@
         <textarea id="a-oracle" placeholder="Une phrase inspirante associée à ce parfum…"></textarea>
         <button class="bouton-or" id="btn-ajouter">Ajouter au répertoire</button>
         <button type="button" class="lien-annuler-edition" id="btn-annuler-edition-parfum" style="display:none">Annuler la modification</button>
+
+        <details class="creatrice" style="margin-top:20px;background:var(--ivoire-fonce)">
+          <summary>✦ Configurer mes règles de suggestion ✦</summary>
+          <div>
+            <p class="note-part">Ces règles sont les tiennes — l'app les applique juste plus vite. Rien n'est publié sans que tu valides.</p>
+
+            <div class="separateur-titre" style="margin-top:10px">Notes → Chakra</div>
+            <div id="liste-config-notes"></div>
+            <label for="cfg-note-mot">Note / matière première</label>
+            <input type="text" id="cfg-note-mot" placeholder="Ex. : santal">
+            <label for="cfg-note-chakra">Chakra associé</label>
+            <select id="cfg-note-chakra">
+              <option value="0">Racine</option>
+              <option value="1">Sacré</option>
+              <option value="2">Plexus solaire</option>
+              <option value="3">Cœur</option>
+              <option value="4">Gorge</option>
+              <option value="5">Troisième œil</option>
+              <option value="6">Couronne</option>
+            </select>
+            <button type="button" class="bouton-or bouton-ligne" id="btn-ajouter-config-note">Ajouter cette association</button>
+
+            <div class="separateur-titre" style="margin-top:24px">Paliers de qualité → Bovis</div>
+            <div id="liste-config-paliers"></div>
+            <label for="cfg-palier-nom">Nom du palier</label>
+            <input type="text" id="cfg-palier-nom" placeholder="Ex. : Niche / Artisanal">
+            <label for="cfg-palier-min">Bovis minimum</label>
+            <input type="number" id="cfg-palier-min" placeholder="Ex. : 11000">
+            <label for="cfg-palier-max">Bovis maximum</label>
+            <input type="number" id="cfg-palier-max" placeholder="Ex. : 13000">
+            <button type="button" class="bouton-or bouton-ligne" id="btn-ajouter-config-palier">Ajouter ce palier</button>
+          </div>
+        </details>
         </div>
       </details>
 
@@ -934,7 +989,6 @@
     <button class="onglet actif" data-cible="accueil"><span class="ico">⛩</span><span class="lib">Accueil</span></button>
     <button class="onglet" data-cible="scanner"><span class="ico">📷</span><span class="lib">Scan</span></button>
     <button class="onglet" data-cible="classeur"><span class="ico">📖</span><span class="lib">Classeur</span></button>
-    <button class="onglet" data-cible="journal"><span class="ico">✨</span><span class="lib">Espace</span></button>
     <button class="onglet" data-cible="articles"><span class="ico">📰</span><span class="lib">Articles</span></button>
     <button class="onglet" data-cible="mantras"><span class="ico">📿</span><span class="lib">Mantras</span></button>
     <button class="onglet" data-cible="world"><span class="ico">🌍</span><span class="lib">World</span></button>
@@ -1121,16 +1175,19 @@ function aller(cible){
   document.querySelectorAll('.ecran').forEach(e=>e.classList.remove('actif'));
   document.getElementById(cible).classList.add('actif');
   document.querySelectorAll('.onglet').forEach(o=>o.classList.toggle('actif',o.dataset.cible===cible));
+  $('#btn-espace-header').classList.toggle('actif', cible==='journal');
   $('#titre-haut').textContent=TITRES[cible];
   if(cible!=='scanner') arreterCamera();
 }
 document.querySelectorAll('.onglet').forEach(o=>o.addEventListener('click',()=>aller(o.dataset.cible)));
+$('#btn-espace-header').addEventListener('click',()=>aller('journal'));
 $('#btn-decouvrir-produits').addEventListener('click',()=>aller('scanner'));
 
 /* ============ DONNÉES (SUPABASE) ============ */
 let ajouts=[], entrees=[], articles=[], profil=null, bibliotheque=[];
 let likesTous=[], commentairesTous=[];
 let worldPosts=[], worldReponses=[], astuces=[], ateliers=[];
+let configNotes=[], configPaliers=[];
 let placesPrises={}, mesReservationsAteliers=[];
 
 async function chargerDonneesPubliques(){
@@ -1171,7 +1228,16 @@ async function chargerDonneesPubliques(){
     placesPrises = {};
     if(data) data.forEach(p=>{ placesPrises[p.atelier_id] = p.places_prises; });
   }catch(e){ console.error('Chargement places prises impossible', e); }
+  try{
+    const {data} = await supabaseClient.from('config_chakra_notes').select('*').order('mot_cle',{ascending:true});
+    if(data) configNotes = data;
+  }catch(e){ console.error('Chargement config notes impossible', e); }
+  try{
+    const {data} = await supabaseClient.from('config_bovis_paliers').select('*').order('bovis_min',{ascending:true});
+    if(data) configPaliers = data;
+  }catch(e){ console.error('Chargement config paliers impossible', e); }
   afficherClasseur(); afficherArticles(); afficherWorldPosts(); afficherAstuces(); afficherAteliers();
+  afficherConfigNotes(); afficherConfigPaliers(); remplirSelectPaliers();
 }
 
 async function chargerDonneesPersonnelles(){
@@ -1209,6 +1275,7 @@ function mettreAJourEspacesCreatrice(){
   afficherArticles(); // pour afficher/masquer les boutons supprimer
   afficherClasseur($('#filtre') ? $('#filtre').value : ''); // pour afficher/masquer les boutons modifier/supprimer
   afficherWorldPosts(); afficherAstuces(); afficherAteliers();
+  afficherConfigNotes(); afficherConfigPaliers();
 }
 
 async function verifierSession(){
@@ -1344,10 +1411,64 @@ function chercherParCode(code){
   if(p){ afficherVerdict(p); return true; }
   return false;
 }
-function montrerNonTrouve(terme){
+function montrerNonTrouve(terme, codeBrut, infosExternes){
   $('#verdict').classList.remove('visible');
-  $('#non-trouve').innerHTML = `« ${terme} » n'est pas encore dans le répertoire.<br>Ajoute-le depuis le Classeur, ou propose-le à Nossane. ✦`;
+  const raccourciAdmin = (codeBrut && estAdmin)
+    ? `<button type="button" class="bouton-or bouton-ligne" id="btn-ajouter-code-scanne" style="margin-top:14px">➕ Ajouter ce parfum au répertoire${infosExternes?' (infos déjà remplies)':' (code déjà rempli)'}</button>`
+    : '';
+  const message = infosExternes
+    ? `<b>${infosExternes.nom}</b>${infosExternes.marque?' · '+infosExternes.marque:''} — Nossane ne l'a pas encore lu vibratoirement, il n'est pas encore dans le répertoire Tanika. ✦`
+    : `« ${terme} » n'est pas encore dans le répertoire.<br>Ajoute-le depuis le Classeur, ou propose-le à Nossane. ✦`;
+  $('#non-trouve').innerHTML = `${message} ${raccourciAdmin}`;
   $('#non-trouve').classList.add('visible');
+  if(codeBrut && estAdmin){
+    $('#btn-ajouter-code-scanne').addEventListener('click',()=>ajouterAvecCodeScanne(codeBrut, infosExternes));
+  }
+}
+
+async function chercherInfosExternes(code){
+  try{
+    const reponse = await fetch(`https://world.openbeautyfacts.org/api/v2/product/${encodeURIComponent(code)}.json`);
+    const data = await reponse.json();
+    if(data && data.status === 1 && data.product){
+      const nom = data.product.product_name || data.product.generic_name || '';
+      const marque = (data.product.brands || '').split(',')[0].trim();
+      const image = data.product.image_front_url || data.product.image_url || '';
+      if(nom) return {nom, marque, image};
+    }
+  }catch(e){ console.error('Recherche externe impossible', e); }
+  return null;
+}
+
+async function traiterCodeIntrouvable(code){
+  $('#verdict').classList.remove('visible');
+  $('#non-trouve').innerHTML = 'Identification du parfum en cours…';
+  $('#non-trouve').classList.add('visible');
+  const infos = await chercherInfosExternes(code);
+  montrerNonTrouve("code "+code, code, infos);
+}
+
+let imageExterneURL = null;
+function ajouterAvecCodeScanne(code, infosExternes){
+  aller('classeur');
+  const details = document.querySelector('#classeur .creatrice');
+  if(details) details.open = true;
+  setTimeout(()=>{
+    $('#a-code').value = code;
+    imageExterneURL = null;
+    if(infosExternes){
+      $('#a-nom').value = infosExternes.nom || '';
+      $('#a-marque').value = infosExternes.marque || '';
+      if(infosExternes.image){
+        imageExterneURL = infosExternes.image;
+        $('#apercu-a-image').src = infosExternes.image;
+        $('#apercu-a-image').classList.add('visible');
+        $('#statut-a-image').textContent = '✦ Photo trouvée automatiquement — remplace-la si tu préfères ta propre photo ✦';
+      }
+    }
+    $('#a-nom').focus();
+    details && details.scrollIntoView({behavior:'smooth', block:'start'});
+  }, 150);
 }
 
 $('#btn-chercher').addEventListener('click',()=>chercherParNom($('#scan-nom').value));
@@ -1386,7 +1507,7 @@ async function demarrerCamera(){
         if(result){
           const code = result.getText();
           if(chercherParCode(code)){ arreterCamera(); }
-          else{ arreterCamera(); montrerNonTrouve("code "+code); }
+          else{ arreterCamera(); traiterCodeIntrouvable(code); }
         }
       }
     );
@@ -1551,6 +1672,7 @@ function reinitialiserFormulaireParfum(){
   $('#a-moments').querySelectorAll('.chip').forEach(c=>c.classList.remove('choisi'));
   aIntentionsChoisies=[]; aMomentsChoisis=[];
   fichierAImage=null; $('#a-image').value=''; $('#apercu-a-image').classList.remove('visible'); $('#statut-a-image').textContent='';
+  imageExterneURL = null;
   $('#bandeau-edition-parfum').classList.remove('visible');
   $('#btn-annuler-edition-parfum').style.display='none';
   $('#btn-ajouter').textContent='Ajouter au répertoire';
@@ -1572,6 +1694,7 @@ function editerParfum(p){
   $('#a-intentions').querySelectorAll('.chip').forEach(c=>c.classList.toggle('choisi', aIntentionsChoisies.includes(c.dataset.i)));
   $('#a-moments').querySelectorAll('.chip').forEach(c=>c.classList.toggle('choisi', aMomentsChoisis.includes(c.dataset.m)));
   fichierAImage=null; $('#a-image').value=''; $('#statut-a-image').textContent='';
+  imageExterneURL = null;
   if(p.image_url){ $('#apercu-a-image').src=p.image_url; $('#apercu-a-image').classList.add('visible'); }
   else { $('#apercu-a-image').classList.remove('visible'); }
   $('#bandeau-edition-parfum').classList.add('visible');
@@ -1599,6 +1722,9 @@ $('#btn-ajouter').addEventListener('click',async()=>{
   const texteOriginal = parfumEnEdition ? 'Enregistrer les modifications' : 'Ajouter au répertoire';
   $('#btn-ajouter').textContent='Envoi…';
   let image_url = await televerserImage(fichierAImage, 'parfums', 'statut-a-image');
+  if(!image_url && !fichierAImage && imageExterneURL){
+    image_url = imageExterneURL;
+  }
   if(!image_url && parfumEnEdition && !fichierAImage){
     const existant = repertoire().find(p=>p.id===parfumEnEdition);
     image_url = existant ? (existant.image_url||'') : '';
@@ -2438,6 +2564,125 @@ $('#btn-ajouter-atelier').addEventListener('click', async()=>{
   $('#statut-atelier').textContent = '✦ Atelier ajouté ✦';
   setTimeout(()=>$('#statut-atelier').textContent='', 2000);
   await chargerDonneesPubliques();
+});
+
+/* ============ RÈGLES DE SUGGESTION (configurées par Nossane) ============ */
+function afficherConfigNotes(){
+  const zone = $('#liste-config-notes');
+  if(!zone) return;
+  if(!configNotes.length){ zone.innerHTML = '<p class="vide">Aucune association définie pour l\'instant.</p>'; return; }
+  zone.innerHTML = configNotes.map(n=>`
+    <div class="config-carte" data-id="${n.id}">
+      <span>${n.mot_cle} → ${CHAKRAS[n.chakra]?CHAKRAS[n.chakra].nom:'?'}</span>
+      ${estAdmin?`<button type="button" class="btn-suppr-config-note" data-id="${n.id}">✕</button>`:''}
+    </div>`).join('');
+  zone.querySelectorAll('.btn-suppr-config-note').forEach(b=>{
+    b.addEventListener('click',async()=>{
+      await supabaseClient.from('config_chakra_notes').delete().eq('id', b.dataset.id);
+      await chargerDonneesPubliques();
+    });
+  });
+}
+
+function afficherConfigPaliers(){
+  const zone = $('#liste-config-paliers');
+  if(!zone) return;
+  if(!configPaliers.length){ zone.innerHTML = '<p class="vide">Aucun palier défini pour l\'instant.</p>'; return; }
+  zone.innerHTML = configPaliers.map(p=>`
+    <div class="config-carte" data-id="${p.id}">
+      <span>${p.nom} : ${p.bovis_min.toLocaleString('fr-FR')} – ${p.bovis_max.toLocaleString('fr-FR')} UB</span>
+      ${estAdmin?`<button type="button" class="btn-suppr-config-palier" data-id="${p.id}">✕</button>`:''}
+    </div>`).join('');
+  zone.querySelectorAll('.btn-suppr-config-palier').forEach(b=>{
+    b.addEventListener('click',async()=>{
+      await supabaseClient.from('config_bovis_paliers').delete().eq('id', b.dataset.id);
+      await chargerDonneesPubliques();
+    });
+  });
+}
+
+function remplirSelectPaliers(){
+  const select = $('#a-palier-suggestion');
+  if(!select) return;
+  select.innerHTML = '<option value="">— Choisir un palier —</option>' +
+    configPaliers.map(p=>`<option value="${p.id}">${p.nom} (${p.bovis_min.toLocaleString('fr-FR')}–${p.bovis_max.toLocaleString('fr-FR')})</option>`).join('');
+}
+
+$('#btn-ajouter-config-note').addEventListener('click', async()=>{
+  const mot = $('#cfg-note-mot').value.trim().toLowerCase();
+  if(!mot){ $('#cfg-note-mot').focus(); return; }
+  if(!sessionActuelle || !estAdmin) return;
+  const {error} = await supabaseClient.from('config_chakra_notes').insert({
+    mot_cle: mot, chakra: Number($('#cfg-note-chakra').value)
+  });
+  if(error){ console.error(error); return; }
+  $('#cfg-note-mot').value='';
+  await chargerDonneesPubliques();
+});
+
+$('#btn-ajouter-config-palier').addEventListener('click', async()=>{
+  const nom = $('#cfg-palier-nom').value.trim();
+  const min = Number($('#cfg-palier-min').value);
+  const max = Number($('#cfg-palier-max').value);
+  if(!nom){ $('#cfg-palier-nom').focus(); return; }
+  if(!min || !max || max<min){ $('#cfg-palier-min').focus(); return; }
+  if(!sessionActuelle || !estAdmin) return;
+  const {error} = await supabaseClient.from('config_bovis_paliers').insert({
+    nom, bovis_min: min, bovis_max: max
+  });
+  if(error){ console.error(error); return; }
+  $('#cfg-palier-nom').value=''; $('#cfg-palier-min').value=''; $('#cfg-palier-max').value='';
+  await chargerDonneesPubliques();
+});
+
+/* Variation déterministe (même parfum = même suggestion, mais pas toutes identiques dans un palier) */
+function variationDeterministe(texte, amplitude){
+  let h = 7;
+  const s = texte.toLowerCase().replace(/\s+/g,'');
+  for(let i=0;i<s.length;i++){ h = (h*31 + s.charCodeAt(i)) % 100000; }
+  return Math.round((h % amplitude) - amplitude/2);
+}
+
+$('#btn-suggerer').addEventListener('click', ()=>{
+  const notesTxt = $('#a-notes-suggestion').value.trim();
+  const palierId = $('#a-palier-suggestion').value;
+  const nomParfum = $('#a-nom').value.trim() || 'parfum';
+  let messages = [];
+
+  if(notesTxt){
+    const notesListe = notesTxt.split(',').map(n=>n.trim().toLowerCase()).filter(Boolean);
+    const comptage = {};
+    notesListe.forEach(note=>{
+      configNotes.forEach(cfg=>{
+        if(note.includes(cfg.mot_cle) || cfg.mot_cle.includes(note)){
+          comptage[cfg.chakra] = (comptage[cfg.chakra]||0) + 1;
+        }
+      });
+    });
+    const chakraTrouve = Object.keys(comptage).sort((a,b)=>comptage[b]-comptage[a])[0];
+    if(chakraTrouve !== undefined){
+      $('#a-chakra').value = chakraTrouve;
+      messages.push(`chakra ${CHAKRAS[chakraTrouve].nom} suggéré à partir de tes notes`);
+    } else {
+      messages.push('aucune de tes notes ne correspond à une association connue — chakra non suggéré');
+    }
+  }
+
+  if(palierId){
+    const palier = configPaliers.find(p=>p.id===palierId);
+    if(palier){
+      const amplitude = Math.max(200, Math.round((palier.bovis_max - palier.bovis_min) * 0.3));
+      const centre = Math.round((palier.bovis_min + palier.bovis_max) / 2);
+      let valeur = centre + variationDeterministe(nomParfum, amplitude);
+      valeur = Math.min(palier.bovis_max, Math.max(palier.bovis_min, valeur));
+      $('#a-bovis').value = valeur;
+      messages.push(`Bovis suggéré : ${valeur.toLocaleString('fr-FR')} (palier ${palier.nom})`);
+    }
+  }
+
+  $('#statut-suggestion').textContent = messages.length
+    ? '✦ ' + messages.join(' · ') + ' — vérifie et ajuste selon ta lecture ✦'
+    : 'Remplis au moins les notes ou choisis un palier pour obtenir une suggestion.';
 });
 
 /* ============ NOTIFICATIONS PUSH ============ */
