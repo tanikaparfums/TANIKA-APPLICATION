@@ -103,6 +103,18 @@
   /* SCANNER D'INTENTION */
   .intention-carte{border:1px solid var(--or-pale);border-radius:16px;background:linear-gradient(160deg,#FFFDF7,var(--ivoire-fonce));padding:18px;margin-bottom:16px}
   .intention-carte h4{font-family:'Cinzel Decorative',serif;font-size:11.5px;letter-spacing:.12em;color:var(--royal);text-transform:uppercase;text-align:center}
+  .recommandation{border:1px solid var(--or);border-radius:18px;box-shadow:inset 0 0 0 5px var(--ivoire),inset 0 0 0 6px var(--or-clair);background:linear-gradient(165deg,#FFFDF7,var(--ivoire-fonce));padding:24px 20px;text-align:center;margin-bottom:16px}
+  .reco-etiquette{font-family:'Cinzel Decorative',serif;font-size:10px;letter-spacing:.16em;color:var(--or);text-transform:uppercase}
+  .reco-image{width:100%;max-width:180px;aspect-ratio:3/4;object-fit:cover;border-radius:12px;margin:14px auto 0;display:block;box-shadow:0 4px 14px rgba(0,0,0,.15)}
+  .reco-nom{font-family:'Cinzel Decorative',serif;font-size:22px;color:var(--royal);margin-top:12px;line-height:1.25}
+  .reco-marque{font-style:italic;color:var(--brun);margin-top:2px}
+  .reco-bovis{font-family:'Cinzel Decorative',serif;font-size:15px;color:var(--encre);margin-top:10px}
+  .reco-pourquoi{font-size:16.5px;line-height:1.5;margin-top:14px;text-align:left}
+  .reco-vide{font-style:italic;color:var(--brun);font-size:16px;line-height:1.5}
+  .reco-autres{margin-top:18px;padding-top:16px;border-top:1px solid var(--or-pale);text-align:left}
+  .reco-autres-titre{font-family:'Cinzel Decorative',serif;font-size:11px;letter-spacing:.1em;color:var(--brun);text-transform:uppercase;text-align:center;margin-bottom:10px}
+  .reco-autre-ligne{font-size:15.5px;padding:6px 0;border-bottom:1px solid var(--or-pale)}
+  .reco-autre-ligne:last-child{border-bottom:none}
   .chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px}
   .chip{border:1px solid var(--or-pale);background:#FFFDF7;border-radius:20px;padding:9px 15px;font-size:15px;color:var(--encre);cursor:pointer;transition:all .2s}
   .chip.choisi{background:var(--royal);border-color:var(--royal);color:var(--or-clair)}
@@ -242,6 +254,8 @@
   /* SIGNATURE TANIKA */
   .signature{font-style:italic;color:var(--brun);font-size:11.5px;letter-spacing:.03em;margin-top:2px}
   .pied-signature{text-align:center;font-style:italic;color:var(--brun);font-size:14px;margin:28px 0 6px;letter-spacing:.03em}
+  .liens-legaux{text-align:center;font-size:12.5px;margin:4px 0 20px}
+  .liens-legaux a{color:var(--brun);text-decoration:underline}
   .pied-signature .or{color:var(--or)}
 
   /* JOURNAL */
@@ -421,6 +435,15 @@
     display:none;align-items:flex-end;justify-content:center;
   }
   #modal-chat.visible{display:flex}
+
+  #modal-nouveau-mdp{
+    position:fixed;inset:0;z-index:60;background:rgba(46,42,31,.5);
+    display:none;align-items:center;justify-content:center;padding:20px;
+  }
+  #modal-nouveau-mdp.visible{display:flex}
+  .commande-panneau{width:100%;max-width:420px;background:var(--ivoire);border-radius:18px;overflow:hidden;box-shadow:0 10px 34px #2E2A1F33}
+  .commande-tete{background:linear-gradient(135deg,#27387A,var(--royal));color:#F7EFD8;padding:16px 18px;font-family:'Cinzel Decorative',serif;font-size:14px;letter-spacing:.08em}
+  .commande-corps{padding:20px}
   .chat-panneau{
     width:100%;max-width:480px;height:min(78vh,640px);
     background:var(--ivoire);border-radius:22px 22px 0 0;
@@ -527,6 +550,11 @@
       </div>
 
       <p class="pied-signature">✦ <span class="or">Tanika Parfums</span> · une création de Nossane ✦</p>
+      <p class="liens-legaux">
+        <a href="/mentions-legales.html">Mentions légales</a> ·
+        <a href="/cgv.html">CGV</a> ·
+        <a href="/politique-confidentialite.html">Confidentialité</a>
+      </p>
     </div>
 
     <!-- ======= SCANNER ======= -->
@@ -542,7 +570,10 @@
         <p class="intention-resume" id="resume-intention" style="display:none">Quelle énergie souhaites-tu incarner ?</p>
         <div class="chips" id="chips-intention" style="display:none"></div>
         <button class="lien-modifier" id="btn-modifier-intention" style="display:none">Modifier mon intention</button>
+        <button class="bouton-or" id="btn-recommander" style="display:none;margin-top:14px">✨ Trouve mon parfum parfait</button>
       </div>
+
+      <div class="recommandation" id="zone-recommandation" style="display:none"></div>
 
       <div class="cadre-scan">
         <div id="video-zone">
@@ -667,6 +698,23 @@
             <label for="cfg-palier-max">Bovis maximum</label>
             <input type="number" id="cfg-palier-max" placeholder="Ex. : 13000">
             <button type="button" class="bouton-or bouton-ligne" id="btn-ajouter-config-palier">Ajouter ce palier</button>
+
+            <div class="separateur-titre" style="margin-top:24px">Intentions → Chakras</div>
+            <p class="note-part">Définit quel(s) chakra(s) correspondent à chaque intention — utilisé pour la compatibilité au scan et pour la recommandation instantanée.</p>
+            <div id="liste-config-intentions"></div>
+            <label for="cfg-intention-cle">Intention</label>
+            <select id="cfg-intention-cle"></select>
+            <label for="cfg-intention-chakra">Chakra associé</label>
+            <select id="cfg-intention-chakra">
+              <option value="0">Racine</option>
+              <option value="1">Sacré</option>
+              <option value="2">Plexus solaire</option>
+              <option value="3">Cœur</option>
+              <option value="4">Gorge</option>
+              <option value="5">Troisième œil</option>
+              <option value="6">Couronne</option>
+            </select>
+            <button type="button" class="bouton-or bouton-ligne" id="btn-ajouter-config-intention">Ajouter cette compatibilité</button>
           </div>
         </details>
         </div>
@@ -691,6 +739,13 @@
             <input type="text" id="conn-email" placeholder="Email" autocomplete="email">
             <input type="password" id="conn-motdepasse" placeholder="Mot de passe" autocomplete="current-password" style="margin-top:10px">
             <button class="bouton-or" id="btn-connexion">Se connecter</button>
+            <button type="button" class="lien-annuler-edition" id="btn-mdp-oublie" style="margin-top:10px">Mot de passe oublié ?</button>
+            <div id="zone-mdp-oublie" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--or-pale)">
+              <label for="mdp-oublie-email" style="margin-top:0">Ton email, pour recevoir un lien de réinitialisation</label>
+              <input type="text" id="mdp-oublie-email" placeholder="Email">
+              <button type="button" class="bouton-or bouton-ligne" id="btn-envoyer-mdp-oublie" style="margin-top:10px">Envoyer le lien</button>
+              <p class="upload-statut" id="statut-mdp-oublie" style="text-align:center"></p>
+            </div>
           </div>
           <div id="form-inscription" style="display:none">
             <input type="text" id="insc-prenom" placeholder="Ton prénom">
@@ -733,6 +788,9 @@
           <div id="abo-abonnee" style="display:none">
             <div class="ab-titre">✦ Abonnée ✦</div>
             <p class="ab-texte" id="ab-texte-actif">Tu as accès à toute l'Olfactothèque.</p>
+            <button type="button" class="bouton-or bouton-ligne" id="btn-annuler-abonnement" style="margin-top:14px">Se désabonner</button>
+            <button type="button" class="bouton-or bouton-ligne" id="btn-reactiver-abonnement" style="margin-top:14px;display:none">Annuler la résiliation</button>
+            <p class="upload-statut" id="statut-annulation-abonnement" style="text-align:center"></p>
           </div>
         </div>
 
@@ -957,6 +1015,20 @@
 
   <button class="bulle-chat" id="btn-ouvrir-chat" aria-label="Ouvrir le chat">✦</button>
 
+  <div id="modal-nouveau-mdp">
+    <div class="commande-panneau">
+      <div class="commande-tete">
+        <div>Nouveau mot de passe</div>
+      </div>
+      <div class="commande-corps">
+        <label for="nouveau-mdp">Choisis ton nouveau mot de passe (6 caractères min.)</label>
+        <input type="password" id="nouveau-mdp" placeholder="Nouveau mot de passe">
+        <button class="bouton-or" id="btn-valider-nouveau-mdp">Valider</button>
+        <p class="upload-statut" id="statut-nouveau-mdp" style="text-align:center"></p>
+      </div>
+    </div>
+  </div>
+
   <div id="modal-chat">
     <div class="chat-panneau">
       <div class="chat-tete">
@@ -1060,6 +1132,15 @@ const INTENTIONS = [
   {cle:"intuition", label:"Affiner mon intuition", chakras:[5], notes:"Encens, Iris, Bois de Santal"},
   {cle:"purification", label:"Purifier mon énergie", chakras:[0,4], notes:"Eucalyptus, Sauge blanche, Agrumes"}
 ];
+
+/* Retourne les chakras compatibles avec une intention : les règles configurées
+   par Nossane si elles existent, sinon les valeurs par défaut ci-dessus. */
+function chakrasPourIntention(intentionCle){
+  const configures = configIntentions.filter(c=>c.intention_cle===intentionCle).map(c=>c.chakra);
+  if(configures.length) return configures;
+  const defaut = INTENTIONS.find(i=>i.cle===intentionCle);
+  return defaut ? defaut.chakras : [];
+}
 
 const ETATS = [
   {cle:"fatiguee", label:"Fatiguée"}, {cle:"stressee", label:"Stressée"},
@@ -1187,7 +1268,7 @@ $('#btn-decouvrir-produits').addEventListener('click',()=>aller('scanner'));
 let ajouts=[], entrees=[], articles=[], profil=null, bibliotheque=[];
 let likesTous=[], commentairesTous=[];
 let worldPosts=[], worldReponses=[], astuces=[], ateliers=[];
-let configNotes=[], configPaliers=[];
+let configNotes=[], configPaliers=[], configIntentions=[];
 let placesPrises={}, mesReservationsAteliers=[];
 
 async function chargerDonneesPubliques(){
@@ -1236,8 +1317,13 @@ async function chargerDonneesPubliques(){
     const {data} = await supabaseClient.from('config_bovis_paliers').select('*').order('bovis_min',{ascending:true});
     if(data) configPaliers = data;
   }catch(e){ console.error('Chargement config paliers impossible', e); }
+  try{
+    const {data} = await supabaseClient.from('config_intention_chakras').select('*');
+    if(data) configIntentions = data;
+  }catch(e){ console.error('Chargement config intentions impossible', e); }
   afficherClasseur(); afficherArticles(); afficherWorldPosts(); afficherAstuces(); afficherAteliers();
   afficherConfigNotes(); afficherConfigPaliers(); remplirSelectPaliers();
+  afficherConfigIntentions(); remplirSelectIntentionsConfig();
 }
 
 async function chargerDonneesPersonnelles(){
@@ -1246,7 +1332,7 @@ async function chargerDonneesPersonnelles(){
   try{
     const {data:prof} = await supabaseClient.from('profiles').select('*').eq('id',uid).single();
     if(prof){
-      profil={prenom:prof.prenom, code_parrainage:prof.code_parrainage, abonnement_actif:!!prof.abonnement_actif, abonnement_periode:prof.abonnement_periode};
+      profil={prenom:prof.prenom, code_parrainage:prof.code_parrainage, abonnement_actif:!!prof.abonnement_actif, abonnement_periode:prof.abonnement_periode, annulation_prevue:!!prof.annulation_prevue};
       estAdmin = !!prof.is_admin;
       if(codeParrainageURL && !prof.parraine_par) await lierAuParrain(uid);
     }
@@ -1290,6 +1376,9 @@ if(supabaseClient){
     sessionActuelle = session;
     afficherEtatConnexion();
     chargerDonneesPersonnelles();
+    if(event === 'PASSWORD_RECOVERY'){
+      $('#modal-nouveau-mdp').classList.add('visible');
+    }
   });
 }
 
@@ -1323,6 +1412,7 @@ function construireChipsIntention(){
     $('#resume-intention').textContent = `✦ Tu te sens ${etatsTxt}, et tu portes l'intention : ${intentionChoisie.label} ✦`;
     $('#chips-intention').style.display='none';
     $('#btn-modifier-intention').style.display='block';
+    $('#btn-recommander').style.display='block';
   }));
 }
 $('#btn-modifier-intention').addEventListener('click',()=>{
@@ -1332,6 +1422,8 @@ $('#btn-modifier-intention').addEventListener('click',()=>{
   $('#btn-continuer-etat').style.display='none';
   $('#resume-intention').style.display='none'; $('#chips-intention').style.display='none';
   $('#btn-modifier-intention').style.display='none';
+  $('#btn-recommander').style.display='none';
+  $('#zone-recommandation').style.display='none';
   $('#chips-etat').querySelectorAll('.chip').forEach(c=>c.classList.remove('choisi'));
 });
 construireChipsIntention();
@@ -1355,7 +1447,7 @@ function afficherVerdict(p){
   let blocCompat='';
   if(intentionChoisie){
     const aligne = pIntentions.includes(intentionChoisie.cle) ||
-      (p.chakra!==undefined && intentionChoisie.chakras.includes(p.chakra));
+      (p.chakra!==undefined && chakrasPourIntention(intentionChoisie.cle).includes(p.chakra));
     blocCompat = aligne
       ? `<div class="v-compat oui"><b>✦ Aligné avec ton intention</b>« ${intentionChoisie.label} », cette fragrance soutient directement cette énergie aujourd'hui.</div>`
       : `<div class="v-compat non"><b>Pas la fragrance du jour</b>Pour « ${intentionChoisie.label} », ce parfum n'est pas le plus soutenant. Il reste une belle énergie, pour un autre moment.</div>`;
@@ -1798,6 +1890,46 @@ $('#btn-connexion').addEventListener('click',async()=>{
   $('#auth-erreur').classList.remove('visible');
 });
 
+$('#btn-mdp-oublie').addEventListener('click',()=>{
+  const zone = $('#zone-mdp-oublie');
+  const visible = zone.style.display === 'block';
+  zone.style.display = visible ? 'none' : 'block';
+  if(!visible) $('#mdp-oublie-email').value = $('#conn-email').value.trim();
+});
+
+$('#btn-envoyer-mdp-oublie').addEventListener('click', async()=>{
+  const email = $('#mdp-oublie-email').value.trim();
+  if(!email){ $('#mdp-oublie-email').focus(); return; }
+  $('#btn-envoyer-mdp-oublie').textContent = 'Envoi…';
+  const {error} = await supabaseClient.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin
+  });
+  $('#btn-envoyer-mdp-oublie').textContent = 'Envoyer le lien';
+  if(error){
+    $('#statut-mdp-oublie').textContent = "Erreur : " + error.message;
+    return;
+  }
+  $('#statut-mdp-oublie').textContent = '✦ Vérifie ta boîte mail (et les spams) — un lien pour choisir un nouveau mot de passe t\'a été envoyé. ✦';
+});
+
+$('#btn-valider-nouveau-mdp').addEventListener('click', async()=>{
+  const nouveauMdp = $('#nouveau-mdp').value;
+  if(nouveauMdp.length < 6){ $('#statut-nouveau-mdp').textContent = 'Le mot de passe doit faire au moins 6 caractères.'; return; }
+  $('#btn-valider-nouveau-mdp').textContent = 'Enregistrement…';
+  const {error} = await supabaseClient.auth.updateUser({ password: nouveauMdp });
+  $('#btn-valider-nouveau-mdp').textContent = 'Valider';
+  if(error){
+    $('#statut-nouveau-mdp').textContent = 'Erreur : ' + error.message;
+    return;
+  }
+  $('#statut-nouveau-mdp').textContent = '✦ Mot de passe mis à jour ✦';
+  $('#nouveau-mdp').value = '';
+  setTimeout(()=>{
+    $('#modal-nouveau-mdp').classList.remove('visible');
+    $('#statut-nouveau-mdp').textContent = '';
+  }, 1800);
+});
+
 $('#btn-inscription').addEventListener('click',async()=>{
   const prenom=$('#insc-prenom').value.trim(), email=$('#insc-email').value.trim(), motdepasse=$('#insc-motdepasse').value;
   if(!prenom){ afficherErreurAuth('Dis-nous ton prénom.'); return; }
@@ -1989,9 +2121,16 @@ function afficherAbonnement(){
   $('#abo-non-abonnee').style.display = abonnee ? 'none' : 'block';
   $('#abo-abonnee').style.display = abonnee ? 'block' : 'none';
   if(abonnee){
-    $('#ab-texte-actif').textContent = profil.abonnement_periode === 'annuel'
-      ? 'Tu as accès à toute l\'Olfactothèque — abonnement annuel.'
-      : 'Tu as accès à toute l\'Olfactothèque — abonnement mensuel.';
+    const periodeTxt = profil.abonnement_periode === 'annuel' ? 'annuel' : 'mensuel';
+    if(profil.annulation_prevue){
+      $('#ab-texte-actif').textContent = `Ton abonnement ${periodeTxt} est en cours de résiliation — tu gardes l'accès jusqu'à la fin de la période déjà payée.`;
+      $('#btn-annuler-abonnement').style.display = 'none';
+      $('#btn-reactiver-abonnement').style.display = 'block';
+    } else {
+      $('#ab-texte-actif').textContent = `Tu as accès à toute l'Olfactothèque — abonnement ${periodeTxt}.`;
+      $('#btn-annuler-abonnement').style.display = 'block';
+      $('#btn-reactiver-abonnement').style.display = 'none';
+    }
   }
 }
 
@@ -2034,6 +2173,41 @@ $('#btn-sabonner').addEventListener('click', async()=>{
     $('#btn-sabonner').textContent = "S'abonner";
   }
 });
+
+async function gererAbonnement(action){
+  if(!sessionActuelle) return;
+  const bouton = action === 'annuler' ? $('#btn-annuler-abonnement') : $('#btn-reactiver-abonnement');
+  const texteOriginal = bouton.textContent;
+  bouton.textContent = 'Un instant…';
+  try{
+    const reponse = await fetch('/.netlify/functions/gerer-abonnement', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ user_id: sessionActuelle.user.id, action })
+    });
+    const donnees = await reponse.json();
+    if(!reponse.ok){
+      $('#statut-annulation-abonnement').textContent = donnees.error || 'Une erreur est survenue.';
+      bouton.textContent = texteOriginal;
+      return;
+    }
+    $('#statut-annulation-abonnement').textContent = action === 'annuler'
+      ? '✦ Résiliation enregistrée ✦'
+      : '✦ Abonnement réactivé ✦';
+    await chargerDonneesPersonnelles();
+    setTimeout(()=>$('#statut-annulation-abonnement').textContent='', 3000);
+  }catch(e){
+    console.error('Gestion abonnement impossible', e);
+    $('#statut-annulation-abonnement').textContent = 'Une erreur est survenue. Réessaie dans un instant.';
+    bouton.textContent = texteOriginal;
+  }
+}
+$('#btn-annuler-abonnement').addEventListener('click', ()=>{
+  if(confirm('Résilier ton abonnement ? Tu garderas l\'accès jusqu\'à la fin de la période déjà payée.')){
+    gererAbonnement('annuler');
+  }
+});
+$('#btn-reactiver-abonnement').addEventListener('click', ()=>gererAbonnement('reactiver'));
 
 /* Message après retour de Stripe pour l'abonnement */
 (function afficherBanniereAbonnement(){
@@ -2634,6 +2808,85 @@ $('#btn-ajouter-config-palier').addEventListener('click', async()=>{
   $('#cfg-palier-nom').value=''; $('#cfg-palier-min').value=''; $('#cfg-palier-max').value='';
   await chargerDonneesPubliques();
 });
+
+/* ============ COMPATIBILITÉS INTENTION → CHAKRA (admin) ============ */
+function remplirSelectIntentionsConfig(){
+  const select = $('#cfg-intention-cle');
+  if(!select) return;
+  select.innerHTML = INTENTIONS.map(i=>`<option value="${i.cle}">${i.label}</option>`).join('');
+}
+
+function afficherConfigIntentions(){
+  const zone = $('#liste-config-intentions');
+  if(!zone) return;
+  if(!configIntentions.length){ zone.innerHTML = '<p class="vide">Aucune compatibilité configurée — les valeurs par défaut sont utilisées.</p>'; return; }
+  zone.innerHTML = configIntentions.map(c=>{
+    const intention = INTENTIONS.find(i=>i.cle===c.intention_cle);
+    return `<div class="config-carte" data-id="${c.id}">
+      <span>${intention?intention.label:c.intention_cle} vers ${CHAKRAS[c.chakra]?CHAKRAS[c.chakra].nom:'?'}</span>
+      ${estAdmin?`<button type="button" class="btn-suppr-config-intention" data-id="${c.id}">✕</button>`:''}
+    </div>`;
+  }).join('');
+  zone.querySelectorAll('.btn-suppr-config-intention').forEach(b=>{
+    b.addEventListener('click',async()=>{
+      await supabaseClient.from('config_intention_chakras').delete().eq('id', b.dataset.id);
+      await chargerDonneesPubliques();
+    });
+  });
+}
+
+$('#btn-ajouter-config-intention').addEventListener('click', async()=>{
+  if(!sessionActuelle || !estAdmin) return;
+  const {error} = await supabaseClient.from('config_intention_chakras').insert({
+    intention_cle: $('#cfg-intention-cle').value,
+    chakra: Number($('#cfg-intention-chakra').value)
+  });
+  if(error){ console.error(error); return; }
+  await chargerDonneesPubliques();
+});
+
+/* ============ RECOMMANDATION INSTANTANÉE ============ */
+function recommanderParfum(){
+  if(!intentionChoisie) return;
+  const zone = $('#zone-recommandation');
+  zone.style.display = 'block';
+
+  const chakrasVoulus = chakrasPourIntention(intentionChoisie.cle);
+  const candidats = repertoire().map(p=>{
+    let score = 0;
+    const pIntentions = p.intentions || [];
+    if(pIntentions.includes(intentionChoisie.cle)) score += 3;
+    if(p.chakra !== undefined && chakrasVoulus.includes(p.chakra)) score += 2;
+    return { p, score };
+  }).filter(c=>c.score > 0).sort((a,b)=> b.score - a.score || b.p.bovis - a.p.bovis);
+
+  if(!candidats.length){
+    zone.innerHTML = '<p class="reco-vide">Aucun parfum du répertoire ne correspond encore à cette intention. Reviens quand Nossane aura enrichi le Classeur ✦</p>';
+    return;
+  }
+
+  const meilleur = candidats[0].p;
+  const v = vibe(meilleur.bovis);
+  const ch = CHAKRAS[meilleur.chakra] || CHAKRAS[3];
+  const autres = candidats.slice(1,4).map(c=>c.p);
+  const etatsTxt = etatsChoisis.length ? etatsChoisis.map(e=>e.label.toLowerCase()).join(', ') : '';
+  const intro = etatsTxt ? ('Tu te sens ' + etatsTxt + ', et tu portes l\'intention ' + intentionChoisie.label + '. ') : '';
+
+  let html = '<div class="reco-etiquette">✦ Recommandé pour toi ✦</div>';
+  if(meilleur.image_url){ html += '<img class="reco-image" src="'+meilleur.image_url+'" alt="'+meilleur.nom+'">'; }
+  html += '<div class="reco-nom">'+meilleur.nom+'</div>';
+  html += '<div class="reco-marque">'+(meilleur.marque||'')+'</div>';
+  html += '<div class="reco-bovis">'+Number(meilleur.bovis).toLocaleString('fr-FR')+' U.B. · '+v.label+' · Chakra '+ch.nom+'</div>';
+  html += '<div class="reco-pourquoi">'+intro+(meilleur.pourquoi||'Cette fragrance résonne avec cette intention.')+'</div>';
+  if(autres.length){
+    html += '<div class="reco-autres"><div class="reco-autres-titre">Autres pistes</div>';
+    autres.forEach(a=>{ html += '<div class="reco-autre-ligne">'+a.nom+(a.marque?' · '+a.marque:'')+'</div>'; });
+    html += '</div>';
+  }
+  zone.innerHTML = html;
+  if(zone.scrollIntoView) zone.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+$('#btn-recommander').addEventListener('click', recommanderParfum);
 
 /* Variation déterministe (même parfum = même suggestion, mais pas toutes identiques dans un palier) */
 function variationDeterministe(texte, amplitude){
